@@ -1,0 +1,23 @@
+# Frontend dependencies
+takwira_frontend/node_modules/
+takwira_frontend/dist/
+takwira_frontend/.local
+
+# Backend files
+takwira_backend/db.sqlite3
+takwira_backend/*.log
+takwira_backend/__pycache__/
+takwira_backend/apps/*/__pycache__/
+takwira_backend/takwira/__pycache__/
+
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store

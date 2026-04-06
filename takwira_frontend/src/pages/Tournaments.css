@@ -1,0 +1,130 @@
+.tournaments-page {
+  background: #fbfdfc;
+  min-height: 80vh;
+}
+
+.tournaments-header {
+  background: linear-gradient(135deg, #1a3c26 0%, #2e8b4a 100%);
+  padding: 4rem 0;
+  text-align: center;
+  color: #fff;
+}
+
+.tournaments-header .section-title {
+  color: #fff;
+}
+
+.tournaments-header .section-sub {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 auto;
+}
+
+.tournaments-list {
+  padding: 4rem 0;
+}
+
+.tournaments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.tournament-card {
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #e8edea;
+  box-shadow: 0 4px 15px rgba(26, 92, 48, 0.05);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.tournament-tag {
+  position: absolute;
+  top: 20px;
+  right: -30px;
+  background: var(--red);
+  color: #fff;
+  padding: 5px 40px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.tournament-content {
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.tournament-icon {
+  width: 70px;
+  height: 70px;
+  background: var(--green-light);
+  color: var(--green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.tournament-content h3 {
+  font-family: var(--display-font);
+  font-size: 28px;
+  letter-spacing: 1.5px;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.tournament-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.tournament-fee {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  padding: 10px;
+  background: #f8faf9;
+  border-radius: 12px;
+}
+
+.tournament-fee span {
+  font-weight: 800;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.btn-join {
+  width: 100%;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-join:hover {
+  background: var(--green-dark);
+}

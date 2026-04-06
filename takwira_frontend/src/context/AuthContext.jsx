@@ -1,0 +1,67 @@
+import { createContext, useState, useEffect, useContext } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import api from '../api/axios';
+
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access');
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        // Assuming current login status depends on token validity
+        if (decoded.exp * 1000 > Date.now()) {
+          setUser(decoded);
+        } else {
+          localStorage.clear();
+        }
+      } catch (e) {
+        localStorage.clear();
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  const login = async (email, password) => {
+    try {
+      const res = await api.post('auth/login/', { email, password });
+      localStorage.setItem('access', res.data.access);
+      localStorage.setItem('refresh', res.data.refresh);
+      const decoded = jwtDecode(res.data.access);
+      setUser(decoded);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.response?.data?.detail || 'Login failed' };
+    }
+  };
+
+  const logout = () => {
+    localStorage.clear();
+    setUser(null);
+  };
+
+  const register = async (userData) => {
+    try {
+      await api.post('auth/register/', userData);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.response?.data || 'Registration failed' };
+    }
+  };
+
+  const value = {
+    user,
+    loading,
+    login,
+    logout,
+    register
+  };
+
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => useContext(AuthContext);

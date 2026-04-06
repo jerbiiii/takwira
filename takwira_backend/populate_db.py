@@ -1,0 +1,44 @@
+import os
+import django
+import pymysql
+pymysql.install_as_MySQLdb()
+import MySQLdb
+MySQLdb.version_info = (2, 1, 1, 'final', 0)
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'takwira.settings')
+django.setup()
+
+from apps.users.models import User
+from apps.subscriptions.models import Plan
+from apps.terrains.models import Terrain
+
+def populate():
+    # Create plans
+    Plan.objects.get_or_create(name='free', defaults={'price_monthly': 0, 'max_reservations': 2, 'can_create_tournament': False, 'can_manage_terrain': False})
+    pro, _ = Plan.objects.get_or_create(name='pro', defaults={'price_monthly': 29, 'max_reservations': 10, 'can_create_tournament': True, 'can_manage_terrain': False})
+    club, _ = Plan.objects.get_or_create(name='club', defaults={'price_monthly': 99, 'max_reservations': 100, 'can_create_tournament': True, 'can_manage_terrain': True})
+
+    # Create users
+    admin, created = User.objects.get_or_create(email='admin@takwira.tn', defaults={'username': 'admin', 'role': 'admin'})
+    if created:
+        admin.set_password('admin123')
+        admin.save()
+
+    owner, created = User.objects.get_or_create(email='owner@takwira.tn', defaults={'username': 'owner', 'role': 'owner', 'subscription_plan': club})
+    if created:
+        owner.set_password('owner123')
+        owner.save()
+
+    player, created = User.objects.get_or_create(email='player@takwira.tn', defaults={'username': 'player', 'role': 'player', 'subscription_plan': pro})
+    if created:
+        player.set_password('player123')
+        player.save()
+
+    # Create Terrains
+    Terrain.objects.get_or_create(name='Stade Tunis', owner=owner, defaults={'city': 'Tunis', 'address': 'Centre Ville', 'price_per_hour': 60.00, 'surface_type': 'synthetic'})
+    Terrain.objects.get_or_create(name='Stade Sousse', owner=owner, defaults={'city': 'Sousse', 'address': 'Khzema', 'price_per_hour': 50.00, 'surface_type': 'grass'})
+
+    print("DB populated successfully!")
+
+if __name__ == '__main__':
+    populate()

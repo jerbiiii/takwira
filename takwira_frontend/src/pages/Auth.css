@@ -1,0 +1,241 @@
+.auth-page {
+  min-height: calc(100vh - 64px - 82px);
+  padding: 4rem 1.5rem;
+  background: var(--green-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  background: #fff;
+  width: 100%;
+  max-width: 440px;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(26, 92, 48, 0.08);
+}
+
+.auth-title {
+  font-family: var(--display-font);
+  font-size: 36px;
+  color: var(--text);
+  letter-spacing: 1.5px;
+  margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+  color: var(--muted);
+  font-size: 15px;
+  margin-bottom: 2rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input, .form-group select {
+  padding: 12px 16px;
+  border: 1px solid #e0e6e2;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(46, 139, 74, 0.1);
+}
+
+.auth-btn {
+  background: var(--green);
+  color: #fff;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.2s;
+}
+
+.auth-btn:hover {
+  background: var(--green-dark);
+}
+
+.auth-error {
+  background: #fff5f5;
+  color: var(--red);
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  border: 1px solid #ffe6e6;
+}
+
+.auth-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.auth-footer a {
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* Animations */
+.auth-animation-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+  background: radial-gradient(circle at center, #fff 0%, #f0f7f2 100%);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.animation-scene {
+  width: 100%;
+  height: 240px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Login Scene */
+.login-scene .goal-svg {
+  position: absolute;
+  bottom: 0px;
+  width: 300px;
+  z-index: 1;
+}
+
+.striker {
+  position: absolute;
+  bottom: 20px;
+  left: 40px;
+  z-index: 2;
+}
+
+.ball {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  bottom: 30px;
+  left: 80px;
+  z-index: 3;
+}
+
+.ball-inner {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border: 4px solid var(--text);
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ball-inner::after {
+  content: '⚽';
+  font-size: 18px;
+}
+
+/* Register Scene */
+.register-scene .contract {
+  width: 200px;
+  height: 280px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #eee;
+  position: relative;
+  transform: rotate(-2deg);
+}
+
+.contract-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid var(--green-light);
+  padding-bottom: 8px;
+}
+
+.club-logo {
+  width: 32px;
+  height: 32px;
+  background: var(--green);
+  color: #fff;
+  font-weight: 900;
+  font-size: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contract-header h3 {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.contract-body .line {
+  height: 2px;
+  background: #f0f0f0;
+  margin-bottom: 8px;
+}
+
+.contract-body .line.short { width: 40%; }
+.contract-body .line.medium { width: 70%; }
+
+.signing-pen {
+  position: absolute;
+  right: 20px;
+  bottom: 60px;
+  z-index: 5;
+}
+
+.signature {
+  position: absolute;
+  left: 20px;
+  bottom: 40px;
+}
+
+.animation-text {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--green-dark);
+  font-weight: 700;
+  font-size: 16px;
+}
