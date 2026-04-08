@@ -21,8 +21,14 @@
 body {
   font-family: var(--primary-font);
   color: var(--text);
-  background: #fff;
+  background: var(--green-dark); /* Changed from #fff to prevent white gaps during transitions/scroll */
   line-height: 1.6;
+}
+
+main {
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* Base Link Styles */

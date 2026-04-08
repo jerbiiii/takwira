@@ -1,8 +1,12 @@
 from rest_framework import generics, permissions
 from django.contrib.auth import get_user_model
-from apps.users.serializers import UserSerializer, UserRegisterSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from apps.users.serializers import UserSerializer, UserRegisterSerializer, MyTokenObtainPairSerializer
 
 User = get_user_model()
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()

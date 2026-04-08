@@ -24,19 +24,14 @@ def populate():
         admin.set_password('admin123')
         admin.save()
 
-    owner, created = User.objects.get_or_create(email='owner@takwira.tn', defaults={'username': 'owner', 'role': 'owner', 'subscription_plan': club})
-    if created:
-        owner.set_password('owner123')
-        owner.save()
-
     player, created = User.objects.get_or_create(email='player@takwira.tn', defaults={'username': 'player', 'role': 'player', 'subscription_plan': pro})
     if created:
         player.set_password('player123')
         player.save()
 
-    # Create Terrains
-    Terrain.objects.get_or_create(name='Stade Tunis', owner=owner, defaults={'city': 'Tunis', 'address': 'Centre Ville', 'price_per_hour': 60.00, 'surface_type': 'synthetic'})
-    Terrain.objects.get_or_create(name='Stade Sousse', owner=owner, defaults={'city': 'Sousse', 'address': 'Khzema', 'price_per_hour': 50.00, 'surface_type': 'grass'})
+    # Create Terrains (All owned by admin now)
+    Terrain.objects.get_or_create(name='Stade Tunis', owner=admin, defaults={'city': 'Tunis', 'address': 'Centre Ville', 'price_per_hour': 60.00, 'surface_type': 'synthetic'})
+    Terrain.objects.get_or_create(name='Stade Sousse', owner=admin, defaults={'city': 'Sousse', 'address': 'Khzema', 'price_per_hour': 50.00, 'surface_type': 'grass'})
 
     print("DB populated successfully!")
 

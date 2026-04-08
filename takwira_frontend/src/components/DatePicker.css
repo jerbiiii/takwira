@@ -1,0 +1,316 @@
+/* ─── DatePicker Container ─── */
+.datepicker {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f8faf9;
+  border: 2px solid #e8f0eb;
+  user-select: none;
+}
+
+.datepicker--dark {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Header ─── */
+.datepicker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--green);
+  color: #fff;
+}
+
+.datepicker--dark .datepicker__header {
+  background: linear-gradient(135deg, rgba(132, 255, 0, 0.15), rgba(132, 255, 0, 0.05));
+}
+
+.datepicker__month-label {
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.datepicker--dark .datepicker__month-label {
+  color: #84ff00;
+}
+
+.datepicker__nav-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.datepicker__nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.datepicker__nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.datepicker--dark .datepicker__nav-btn {
+  background: rgba(132, 255, 0, 0.1);
+  color: #84ff00;
+}
+
+.datepicker--dark .datepicker__nav-btn:hover:not(:disabled) {
+  background: rgba(132, 255, 0, 0.2);
+}
+
+/* ─── Weekday Headers ─── */
+.datepicker__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 10px 8px 6px;
+  gap: 4px;
+}
+
+.datepicker__weekday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.datepicker--dark .datepicker__weekday {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ─── Calendar Grid ─── */
+.datepicker__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding: 4px 8px 12px;
+  position: relative;
+  min-height: 240px;
+}
+
+/* ─── Loading Overlay ─── */
+.datepicker__loading {
+  position: absolute;
+  inset: 0;
+  background: rgba(248, 250, 249, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  border-radius: 8px;
+}
+
+.datepicker--dark .datepicker__loading {
+  background: rgba(26, 26, 26, 0.7);
+}
+
+.datepicker__spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(46, 139, 74, 0.2);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: dp-spin 0.8s linear infinite;
+}
+
+.datepicker--dark .datepicker__spinner {
+  border-color: rgba(132, 255, 0, 0.15);
+  border-top-color: #84ff00;
+}
+
+@keyframes dp-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Day Cell ─── */
+.datepicker__cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.datepicker--dark .datepicker__cell {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.datepicker__cell--empty {
+  cursor: default;
+}
+
+/* Available day hover */
+.datepicker__cell:not(.datepicker__cell--empty):not(.datepicker__cell--disabled):hover {
+  background: var(--green-light);
+  transform: scale(1.08);
+}
+
+.datepicker--dark .datepicker__cell:not(.datepicker__cell--empty):not(.datepicker__cell--disabled):hover {
+  background: rgba(132, 255, 0, 0.1);
+}
+
+/* Today */
+.datepicker__cell--today {
+  border: 2px solid var(--green);
+}
+
+.datepicker--dark .datepicker__cell--today {
+  border-color: #84ff00;
+}
+
+/* Selected */
+.datepicker__cell--selected {
+  background: var(--green) !important;
+  color: #fff !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(46, 139, 74, 0.35);
+}
+
+.datepicker--dark .datepicker__cell--selected {
+  background: #84ff00 !important;
+  color: #000 !important;
+  box-shadow: 0 4px 12px rgba(132, 255, 0, 0.3);
+}
+
+/* Past dates */
+.datepicker__cell--past {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.datepicker--dark .datepicker__cell--past {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+/* ─── OCCUPIED (RED) ─── */
+.datepicker__cell--occupied {
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626 !important;
+  cursor: not-allowed !important;
+  position: relative;
+}
+
+.datepicker__cell--occupied::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 2px;
+  background: rgba(220, 38, 38, 0.4);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  border-radius: 2px;
+}
+
+.datepicker__cell--occupied:hover {
+  background: rgba(220, 38, 38, 0.15) !important;
+  transform: none !important;
+}
+
+.datepicker--dark .datepicker__cell--occupied {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff453a !important;
+}
+
+.datepicker--dark .datepicker__cell--occupied::after {
+  background: rgba(255, 59, 48, 0.4);
+}
+
+.datepicker--dark .datepicker__cell--occupied:hover {
+  background: rgba(255, 59, 48, 0.18) !important;
+}
+
+/* Tournament (slightly different shade) */
+.datepicker__cell--tournament {
+  background: rgba(220, 38, 38, 0.12);
+}
+
+.datepicker--dark .datepicker__cell--tournament {
+  background: rgba(255, 59, 48, 0.15);
+}
+
+/* Occupied dot indicator */
+.datepicker__occupied-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #dc2626;
+  position: absolute;
+  bottom: 4px;
+}
+
+.datepicker--dark .datepicker__occupied-dot {
+  background: #ff453a;
+}
+
+/* Day number */
+.datepicker__day-number {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Legend ─── */
+.datepicker__legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid #e8f0eb;
+}
+
+.datepicker--dark .datepicker__legend {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.datepicker__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.datepicker--dark .datepicker__legend-item {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.datepicker__legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.datepicker__legend-dot--available {
+  background: var(--green);
+}
+
+.datepicker__legend-dot--occupied {
+  background: #dc2626;
+}
+
+.datepicker__legend-dot--tournament {
+  background: linear-gradient(135deg, #dc2626, #ff6b35);
+}

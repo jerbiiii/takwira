@@ -16,8 +16,58 @@
 
 .tournaments-header .section-sub {
   color: rgba(255, 255, 255, 0.7);
-  margin: 0 auto;
+  margin: 0;
 }
+
+.header-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  gap: 2rem;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.btn-create-tournament {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(132, 255, 0, 0.2);
+}
+
+.btn-create-tournament:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem;
+  background: #fff;
+  border: 1px dashed #e1e8e4;
+  border-radius: 20px;
+  color: var(--muted);
+}
+
+@media (max-width: 768px) {
+  .header-flex {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
 
 .tournaments-list {
   padding: 4rem 0;
@@ -51,7 +101,13 @@
   text-transform: uppercase;
   transform: rotate(45deg);
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  letter-spacing: 1px;
 }
+
+.tournament-tag.open { background: #2ba640; }
+.tournament-tag.ongoing { background: #f5a623; }
+.tournament-tag.finished { background: #9b9b9b; }
+
 
 .tournament-content {
   padding: 2.5rem;
@@ -128,3 +184,56 @@
 .btn-join:hover {
   background: var(--green-dark);
 }
+
+.admin-msg {
+  background: rgba(43, 166, 64, 0.1);
+  color: #2ba640;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(43, 166, 64, 0.2);
+}
+
+.admin-msg.small {
+  padding: 8px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.admin-actions-overlay {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.admin-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+}
+
+.admin-btn.edit {
+  background: var(--green);
+}
+
+.admin-btn.delete {
+  background: var(--red);
+}
+
+.admin-btn:hover {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
+

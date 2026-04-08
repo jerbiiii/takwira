@@ -22,10 +22,10 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
     ROLE_CHOICES = (
-        ('player', 'Player'),
-        ('owner', 'Terrain Owner'),
+        ('player', 'Joueur'),
         ('admin', 'Admin'),
     )
+
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import LoginAnimation from '../components/LoginAnimation';
 import { Trophy } from 'lucide-react';
 import './Auth.css';
@@ -34,12 +35,14 @@ const Login = () => {
       // One final "goal" kick then redirect
       setIsLoading(false);
       setIsSuccess(true);
+      toast.success('Bienvenue sur Takwira !');
       // Give the GOAL animation time to play (≈1.6 s)
       setTimeout(() => navigate(from, { replace: true }), 2200);
     } else {
       // Failed login: trigger the "missed" shot animation
       setIsLoading(false);
       setIsError(true);
+      toast.error(result.error || 'Email ou mot de passe incorrect.');
       
       // Let the "missed goal" animation play, then restore form
       setTimeout(() => {

@@ -22,11 +22,27 @@ const Pricing = () => {
     fetchPlans();
   }, []);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+
   if (loading) {
     return <div className="loading-screen">Chargement des tarifs...</div>;
   }
 
-  // Icons mapping for plans
   const getIcon = (name) => {
     switch (name.toLowerCase()) {
       case 'free':
@@ -45,19 +61,31 @@ const Pricing = () => {
     <div className="pricing-page">
       <section className="pricing-header">
         <div className="container">
-          <h1 className="section-title">Choisissez Votre Formule</h1>
-          <p className="section-sub">Des options flexibles pour tous les types de pratiquants et de clubs.</p>
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <h1 className="section-title">Choisissez Votre Formule</h1>
+            <p className="section-sub">Des options flexibles pour tous les types de pratiquants et de clubs.</p>
+          </motion.div>
         </div>
       </section>
 
       <section className="pricing-list">
         <div className="container">
-          <div className="pricing-grid">
+          <motion.div 
+            className="pricing-grid"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {plans.map((plan) => (
               <motion.div 
                 key={plan.id} 
                 className={`plan-card ${plan.name.toLowerCase() === 'pro' ? 'popular' : ''}`}
-                whileHover={{ scale: 1.03 }}
+                variants={itemVariants}
+                whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
               >
                 {plan.name.toLowerCase() === 'pro' && <div className="popular-badge">Recommandé</div>}
                 <div className="plan-icon">
@@ -76,7 +104,7 @@ const Pricing = () => {
                 <button className="btn-select">S'abonner</button>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>

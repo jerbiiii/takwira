@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, CreditCard, Lock } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 import api from '../api/axios';
+import DatePicker from './DatePicker';
 import './BookingModal.css';
 
 const BookingModal = ({ terrain, isOpen, onClose }) => {
@@ -16,7 +18,7 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return; // Should not happen if UI is protected correctly
+    if (!user) return;
     
     setLoading(true);
     try {
@@ -24,16 +26,17 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
         terrain: terrain.id,
         date: date,
         start_time: startTime,
-        end_time: startTime, // Simple logic: assume 1 hour duration
+        // Backend now handles end_time calculation (2h default)
         status: 'confirmed'
       });
       setSuccess(true);
+      toast.success('Terrain réservé avec succès !');
       setTimeout(() => {
         onClose();
         setSuccess(false);
       }, 2000);
     } catch (err) {
-      alert("Erreur lors de la réservation : " + (err.response?.data?.detail || "Vérifiez vos informations"));
+      toast.error(err.response?.data?.detail || "Ce créneau est probablement déjà occupé.");
     } finally {
       setLoading(false);
     }
@@ -45,10 +48,11 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
     <AnimatePresence>
       <div className="modal-overlay" onClick={onClose}>
         <motion.div 
-          className="modal-content"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
+          className="modal-content booking-modal-wide"
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
         >
           <button className="modal-close" onClick={onClose}><X /></button>
@@ -89,13 +93,19 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
               
               <form onSubmit={handleSubmit} className="booking-form">
                 <div className="form-group">
-                  <label><Calendar size={16} /> Date</label>
-                  <input 
-                    type="date" 
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    required 
+                  <label><Calendar size={16} /> Choisissez une date</label>
+                  <DatePicker 
+                    terrainId={terrain.id} 
+                    value={date} 
+                    onChange={setDate} 
                   />
+                  {date && (
+                    <div className="selected-date-badge">
+                      📅 {new Date(date + 'T00:00:00').toLocaleDateString('fr-FR', { 
+                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+                      })}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="form-group">
@@ -110,16 +120,16 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
 
                 <div className="booking-summary">
                   <div className="summary-row">
-                    <span>Durée</span>
-                    <span>1 Heure</span>
+                    <span>Durée du match</span>
+                    <span>2 Heures</span>
                   </div>
                   <div className="summary-row total">
                     <span>Total à payer</span>
-                    <span>{terrain.price_per_hour} TND</span>
+                    <span>{parseFloat(terrain.price_per_hour * 2).toFixed(2)} TND</span>
                   </div>
                 </div>
 
-                <button type="submit" className="btn-confirm" disabled={loading}>
+                <button type="submit" className="btn-confirm" disabled={loading || !date}>
                   {loading ? "Traitement..." : <><CreditCard size={18} /> Confirmer la réservation</>}
                 </button>
               </form>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import RegisterAnimation from '../components/RegisterAnimation';
 import { Trophy } from 'lucide-react';
 import './Auth.css';
@@ -35,6 +36,7 @@ const Register = () => {
     if (result.success) {
       setIsLoading(false);
       setIsSuccess(true);
+      toast.success('Compte créé ! Bienvenue dans l\'équipe.');
       // Let the card reveal animation play fully (≈5s)
       setTimeout(() => navigate('/login', { state: { from } }), 5500);
     } else {
@@ -45,9 +47,13 @@ const Register = () => {
         const err = result.error;
         if (typeof err === 'object') {
           const msgs = Object.values(err).flat();
-          setError(msgs.join(' '));
+          const fullMessage = msgs.join(' ');
+          setError(fullMessage);
+          toast.error(fullMessage);
         } else {
-          setError(err || 'Une erreur est survenue.');
+          const fullMessage = err || 'Une erreur est survenue.';
+          setError(fullMessage);
+          toast.error(fullMessage);
         }
       }, 1200);
     }
@@ -154,13 +160,6 @@ const Register = () => {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label>Rôle</label>
-                    <select name="role" value={formData.role} onChange={handleChange}>
-                      <option value="player">Joueur</option>
-                      <option value="owner">Propriétaire de terrain</option>
-                    </select>
-                  </div>
 
                   <motion.button
                     type="submit"
