@@ -27,7 +27,7 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
         try {
           const res = await api.get('terrains/');
           setTerrains(res.data);
-          
+
           if (editingTournament) {
             setFormData({
               name: editingTournament.name,
@@ -104,7 +104,7 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
 
   return (
     <div className="modal-overlay">
-      <motion.div 
+      <motion.div
         className="modal-content tournament-modal"
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -122,17 +122,17 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
 
         <form onSubmit={handleSubmit} className="tournament-form">
           {error && <div className="form-error">{error}</div>}
-          
+
           <div className="form-row">
             <div className="form-group">
               <label><Trophy size={16} /> Nom du tournoi</label>
-              <input 
-                type="text" 
-                name="name" 
-                value={formData.name} 
-                onChange={handleChange} 
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
                 placeholder="Ex: Coupe du Ramadan 2024"
-                required 
+                required
               />
             </div>
           </div>
@@ -152,9 +152,9 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
           <div className="form-row">
             <div className="form-group">
               <label><Calendar size={16} /> Dates du tournoi</label>
-              
+
               <div className="date-tabs">
-                <button 
+                <button
                   type="button"
                   className={`date-tab ${activeDate === 'start' ? 'date-tab--active' : ''}`}
                   onClick={() => setActiveDate('start')}
@@ -162,7 +162,7 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
                   <span className="date-tab__label">Début</span>
                   <span className="date-tab__value">{formatDateFr(formData.start_date)}</span>
                 </button>
-                <button 
+                <button
                   type="button"
                   className={`date-tab ${activeDate === 'end' ? 'date-tab--active' : ''}`}
                   onClick={() => setActiveDate('end')}
@@ -186,25 +186,25 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
           <div className="form-row split">
             <div className="form-group">
               <label><Users size={16} /> Max Équipes</label>
-              <input 
-                type="number" 
-                name="max_teams" 
-                value={formData.max_teams} 
-                onChange={handleChange} 
+              <input
+                type="number"
+                name="max_teams"
+                value={formData.max_teams}
+                onChange={handleChange}
                 min="2"
-                required 
+                required
               />
             </div>
             <div className="form-group">
               <label><DollarSign size={16} /> Frais (TND)</label>
-              <input 
-                type="number" 
-                name="entry_fee" 
-                value={formData.entry_fee} 
-                onChange={handleChange} 
+              <input
+                type="number"
+                name="entry_fee"
+                value={formData.entry_fee}
+                onChange={handleChange}
                 min="0"
                 step="0.01"
-                required 
+                required
               />
             </div>
           </div>
@@ -224,9 +224,9 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
 
           <div className="modal-actions">
             <button type="button" className="btn-cancel" onClick={onClose}>Annuler</button>
-            <button 
-              type="submit" 
-              className="btn-submit" 
+            <button
+              type="submit"
+              className="btn-submit"
               disabled={loading || !formData.start_date || !formData.end_date}
             >
               {loading ? 'Enregistrement...' : editingTournament ? 'Mettre à jour' : 'Créer le tournoi'}

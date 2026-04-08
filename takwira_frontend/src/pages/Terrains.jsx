@@ -2,12 +2,29 @@ import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Zap, Plus, Edit2, Trash2 } from 'lucide-react';
+import { MapPin, Users, Zap, Plus, Edit2, Trash2, Crosshair, Map as MapIcon, List } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import BookingModal from '../components/BookingModal';
 import CreateTerrainModal from '../components/CreateTerrainModal';
 import './Terrains.css';
+
+// Fix for default marker icons in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Helper component to center map
+const ChangeView = ({ center, zoom }) => {
+  const map = useMap();
+  map.setView(center, zoom);
+  return null;
+};
 
 const Terrains = () => {
   const [terrains, setTerrains] = useState([]);
@@ -16,11 +33,17 @@ const Terrains = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isManageOpen, setIsManageOpen] = useState(false);
   const [editingTerrain, setEditingTerrain] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [isMapVisible, setIsMapVisible] = useState(true);
   const { user } = useAuth();
 
-  const fetchTerrains = async () => {
+  const fetchTerrains = async (lat, lng) => {
     try {
-      const res = await api.get('terrains/');
+      let url = 'terrains/';
+      if (lat && lng) {
+        url += `?lat=${lat}&lng=${lng}&dist=30`; // 30km radius
+      }
+      const res = await api.get(url);
       setTerrains(res.data);
     } catch (err) {
       console.error("Error fetching terrains:", err);
@@ -29,8 +52,37 @@ const Terrains = () => {
     }
   };
 
+  const getGeolocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("La géolocalisation n'est pas supportée par votre navigateur.");
+      fetchTerrains();
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        fetchTerrains(latitude, longitude);
+        toast.success("Localisation réussie !");
+      },
+      () => {
+        toast.error("Impossible d'accéder à votre position. Affichage global.");
+        fetchTerrains();
+      }
+    );
+  };
+
   useEffect(() => {
+    // 1. Fetch all terrains immediately
     fetchTerrains();
+
+    // 2. Silently get location just for the blue dot, no filtering
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      });
+    }
   }, []);
 
   const handleBookClick = (terrain) => {
@@ -96,19 +148,86 @@ const Terrains = () => {
             <h1 className="section-title">Explorez les Terrains</h1>
             <p className="section-sub">Trouvez le terrain idéal pour votre prochain match en Tunisie.</p>
           </motion.div>
-          {user && user.role === 'admin' && (
-            <motion.button 
-              className="btn-add-terrain" 
-              onClick={handleCreate}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <Plus size={20} /> Ajouter un terrain
-            </motion.button>
-          )}
+          
+          <div className="terrains-controls">
+            <button className="btn-control" onClick={() => setIsMapVisible(!isMapVisible)}>
+              {isMapVisible ? <><List size={18} /> Liste</> : <><MapIcon size={18} /> Carte</>}
+            </button>
+            <button className="btn-control highlight" onClick={getGeolocation}>
+              <Crosshair size={18} /> Me localiser
+            </button>
+            {user && user.role === 'admin' && (
+              <motion.button 
+                className="btn-add-terrain" 
+                onClick={handleCreate}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <Plus size={20} /> Ajouter un terrain
+              </motion.button>
+            )}
+          </div>
         </div>
       </section>
+
+      {/* Map Section */}
+      <AnimatePresence>
+        {isMapVisible && (
+          <motion.section 
+            className="terrains-map-sec"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: '450px' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <div className="container map-wrapper">
+              <MapContainer 
+                center={userLocation ? [userLocation.lat, userLocation.lng] : [36.8065, 10.1815]} 
+                zoom={12} 
+                scrollWheelZoom={true}
+                className="main-map"
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                
+                {userLocation && (
+                  <Marker 
+                    position={[userLocation.lat, userLocation.lng]}
+                    icon={L.divIcon({
+                      className: 'user-location-marker',
+                      html: '<div class="pulse"></div><div class="dot"></div>',
+                      iconSize: [20, 20],
+                      iconAnchor: [10, 10]
+                    })}
+                  >
+                    <Popup><b>Vous êtes ici</b></Popup>
+                  </Marker>
+                )}
+
+                {terrains.map(t => (
+                  t.latitude && t.longitude && (
+                    <Marker key={t.id} position={[t.latitude, t.longitude]}>
+                      <Popup className="map-popup">
+                        <div className="popup-content">
+                          <strong>{t.name}</strong>
+                          <span>{t.price_per_hour} TND/h</span>
+                          <button onClick={() => handleBookClick(t)} className="btn-book-mini">
+                            Détails / Réserver
+                          </button>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  )
+                ))}
+
+                {userLocation && <ChangeView center={[userLocation.lat, userLocation.lng]} zoom={13} />}
+              </MapContainer>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       <section className="terrains-list">
         <div className="container">
@@ -118,7 +237,7 @@ const Terrains = () => {
             initial="hidden"
             animate="visible"
           >
-            {terrains.map((terrain) => (
+            {terrains.map((terrain, index) => (
               <motion.div 
                 key={terrain.id} 
                 className="terrain-card"
@@ -126,9 +245,19 @@ const Terrains = () => {
                 whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
               >
                 <div className="terrain-image">
-                  <div className="image-placeholder">
-                    <Zap size={40} color="rgba(255,255,255,0.3)" />
-                  </div>
+                  {terrain.images && terrain.images.length > 0 ? (
+                    <img 
+                      src={terrain.images[0].image} 
+                      alt={terrain.name} 
+                      className="terrain-img-main"
+                    />
+                  ) : (
+                    <img 
+                      src={`/images/${["pitch_default.png", "stadium_default.png"][index % 2]}`} 
+                      alt={terrain.name} 
+                      className="terrain-img-main placeholder-filter"
+                    />
+                  )}
                   <div className="terrain-price">{terrain.price_per_hour} TND/h</div>
                   
                   {user && user.role === 'admin' && (

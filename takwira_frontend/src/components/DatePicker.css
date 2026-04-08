@@ -179,20 +179,6 @@
   border-color: #84ff00;
 }
 
-/* Selected */
-.datepicker__cell--selected {
-  background: var(--green) !important;
-  color: #fff !important;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(46, 139, 74, 0.35);
-}
-
-.datepicker--dark .datepicker__cell--selected {
-  background: #84ff00 !important;
-  color: #000 !important;
-  box-shadow: 0 4px 12px rgba(132, 255, 0, 0.3);
-}
-
 /* Past dates */
 .datepicker__cell--past {
   color: #ccc;
@@ -205,13 +191,19 @@
 
 /* ─── OCCUPIED (RED) ─── */
 .datepicker__cell--occupied {
-  background: rgba(220, 38, 38, 0.08);
-  color: #dc2626 !important;
-  cursor: not-allowed !important;
+  background: rgba(46, 139, 74, 0.05); /* Light green for partial occupancy */
+  color: var(--green); /* Removed !important to allow selected state to override */
   position: relative;
 }
 
-.datepicker__cell--occupied::after {
+/* ONLY apply the diagonal bar and not-allowed cursor when TRULY DISABLED (Fully booked or past) */
+.datepicker__cell--disabled {
+  cursor: not-allowed !important;
+  color: #ccc !important;
+  opacity: 0.6;
+}
+
+.datepicker__cell--disabled::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -229,25 +221,34 @@
 }
 
 .datepicker--dark .datepicker__cell--occupied {
-  background: rgba(255, 59, 48, 0.1);
-  color: #ff453a !important;
+  background: rgba(132, 255, 0, 0.05);
+  color: #84ff00;
 }
 
-.datepicker--dark .datepicker__cell--occupied::after {
-  background: rgba(255, 59, 48, 0.4);
+/* Selected - Moved here to override occupied state */
+.datepicker__cell--selected {
+  background: var(--green) !important;
+  color: #fff !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(46, 139, 74, 0.35);
+  z-index: 5;
 }
 
-.datepicker--dark .datepicker__cell--occupied:hover {
-  background: rgba(255, 59, 48, 0.18) !important;
+.datepicker--dark .datepicker__cell--selected {
+  background: #84ff00 !important;
+  color: #000 !important;
+  box-shadow: 0 4px 12px rgba(132, 255, 0, 0.3);
 }
 
 /* Tournament (slightly different shade) */
 .datepicker__cell--tournament {
-  background: rgba(220, 38, 38, 0.12);
+  background: rgba(220, 38, 38, 0.15) !important;
+  color: #dc2626 !important;
 }
 
 .datepicker--dark .datepicker__cell--tournament {
-  background: rgba(255, 59, 48, 0.15);
+  background: rgba(255, 59, 48, 0.2) !important;
+  color: #ff453a !important;
 }
 
 /* Occupied dot indicator */

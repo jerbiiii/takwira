@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Clock, CreditCard, Lock } from 'lucide-react';
+import { X, Calendar, Clock, CreditCard, Lock, User as UserIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
 import DatePicker from './DatePicker';
+import TimePicker from './TimePicker';
 import './BookingModal.css';
 
 const BookingModal = ({ terrain, isOpen, onClose }) => {
@@ -13,8 +14,15 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
   const location = useLocation();
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
+  const [playerName, setPlayerName] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [occupationData, setOccupationData] = useState({});
+
+  const occupiedSlots = useMemo(() => {
+    if (!date || !occupationData[date]) return [];
+    return occupationData[date].slots || [];
+  }, [date, occupationData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,7 +34,7 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
         terrain: terrain.id,
         date: date,
         start_time: startTime,
-        // Backend now handles end_time calculation (2h default)
+        player_name: playerName,
         status: 'confirmed'
       });
       setSuccess(true);
@@ -92,12 +100,24 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
               <p className="price-tag">{terrain.price_per_hour} TND / Heure</p>
               
               <form onSubmit={handleSubmit} className="booking-form">
+                <div className="form-group" style={{ marginBottom: '1.2rem' }}>
+                  <label><UserIcon size={16} /> Nom du Joueur / Équipe</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: Team Amine ou Mohamed..."
+                    className="form-input"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                  />
+                </div>
+
                 <div className="form-group">
                   <label><Calendar size={16} /> Choisissez une date</label>
                   <DatePicker 
                     terrainId={terrain.id} 
                     value={date} 
                     onChange={setDate} 
+                    onOccupiedInfo={setOccupationData}
                   />
                   {date && (
                     <div className="selected-date-badge">
@@ -108,13 +128,12 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
                   )}
                 </div>
                 
-                <div className="form-group">
+                <div className="form-group" style={{ marginTop: '0.5rem' }}>
                   <label><Clock size={16} /> Heure de début</label>
-                  <input 
-                    type="time" 
+                  <TimePicker 
                     value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    required 
+                    onChange={setStartTime}
+                    occupiedSlots={occupiedSlots}
                   />
                 </div>
 
@@ -129,7 +148,7 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                <button type="submit" className="btn-confirm" disabled={loading || !date}>
+                <button type="submit" className="btn-confirm" disabled={loading || !date || !startTime || !playerName}>
                   {loading ? "Traitement..." : <><CreditCard size={18} /> Confirmer la réservation</>}
                 </button>
               </form>

@@ -8,6 +8,7 @@ from apps.reservations.models import Reservation
 from apps.tournaments.models import Tournament
 from datetime import date, timedelta
 import calendar
+from math import radians, cos, sin, asin, sqrt
 
 class TerrainViewSet(viewsets.ModelViewSet):
     queryset = Terrain.objects.filter(is_active=True).order_by('-created_at')
@@ -27,8 +28,34 @@ class TerrainViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         city = self.request.query_params.get('city')
+        lat = self.request.query_params.get('lat')
+        lng = self.request.query_params.get('lng')
+        dist = self.request.query_params.get('dist', 20) # Default 20km
+
         if city:
             queryset = queryset.filter(city__icontains=city)
+
+        if lat and lng:
+            try:
+                lat = float(lat)
+                lng = float(lng)
+                dist = float(dist)
+                
+                # Bounding box filter (approximate but fast)
+                # 1 degree latitude is roughly 111km
+                lat_offset = dist / 111.0
+                # 1 degree longitude is 111km * cos(lat)
+                lng_offset = dist / (111.0 * cos(radians(lat)))
+                
+                queryset = queryset.filter(
+                    latitude__gte=lat - abs(lat_offset),
+                    latitude__lte=lat + abs(lat_offset),
+                    longitude__gte=lng - abs(lng_offset),
+                    longitude__lte=lng + abs(lng_offset)
+                )
+            except (ValueError, TypeError):
+                pass
+                
         return queryset
 
     @action(detail=True, methods=['get'], url_path='occupied-dates')
@@ -95,9 +122,27 @@ class TerrainViewSet(viewsets.ModelViewSet):
                 }
                 current += timedelta(days=1)
 
+        # 3. Add a fallback for days with reservations that are NOT full day
+        # (This is handled by ensuring 'full_day' is only True for tournaments)
+
         return Response({
             'terrain_id': str(terrain.id),
             'year': year,
             'month': month,
             'occupied_dates': list(occupied.values())
+        })
+
+    @action(detail=False, methods=['get'], url_path='platform-stats')
+    def platform_stats(self, request):
+        """
+        Returns general platform statistics for the home page.
+        """
+        terrains_count = Terrain.objects.filter(is_active=True).count()
+        players_count = Tournament.objects.model._meta.apps.get_model('users.User').objects.filter(role='player').count()
+        tournaments_count = Tournament.objects.count()
+
+        return Response({
+            'terrains_count': terrains_count,
+            'players_count': players_count,
+            'tournaments_count': tournaments_count
         })

@@ -10,7 +10,7 @@ const MONTHS_FR = [
   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
 ];
 
-const DatePicker = ({ terrainId, value, onChange, dark = false, minDate = null }) => {
+const DatePicker = ({ terrainId, value, onChange, onOccupiedInfo, dark = false, minDate = null }) => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -41,6 +41,13 @@ const DatePicker = ({ terrainId, value, onChange, dark = false, minDate = null }
   useEffect(() => {
     fetchOccupiedDates();
   }, [fetchOccupiedDates]);
+
+  // Notify parent of occupied status details
+  useEffect(() => {
+    if (Object.keys(occupiedDates).length > 0 && typeof onOccupiedInfo === 'function') {
+      onOccupiedInfo(occupiedDates);
+    }
+  }, [occupiedDates, onOccupiedInfo]);
 
   // When value changes externally, update the visible month
   useEffect(() => {
@@ -104,8 +111,42 @@ const DatePicker = ({ terrainId, value, onChange, dark = false, minDate = null }
     return value === formatDate(day);
   };
 
+  const isDayFullyBooked = (day) => {
+    const occ = isOccupied(day);
+    if (!occ) return false;
+    if (occ.type === 'tournament') return true;
+    if (!occ.slots || occ.slots.length === 0) return false;
+
+    // Check if any 2-hour slot is available from 06:00 to 21:00
+    // And midnight slots (00:00 - 01:00)
+    const hoursToCheck = [
+      ...Array.from({ length: 16 }, (_, i) => i + 6), // 6 to 21
+      0, 1 // Late night
+    ];
+
+    for (const h of hoursToCheck) {
+      for (const m of [0, 30]) {
+        if (h === 1 && m === 30) continue; // Skip 01:30 (last start is 01:00)
+        
+        const startMins = h * 60 + m;
+        const endMins = startMins + 120; // 2 hour duration
+        
+        const hasOverlap = occ.slots.some(s => {
+          const [sh, sm] = s.start.split(':').map(Number);
+          const [eh, em] = s.end.split(':').map(Number);
+          const occStart = sh * 60 + sm;
+          const occEnd = eh * 60 + em;
+          return (startMins < occEnd) && (endMins > occStart);
+        });
+
+        if (!hasOverlap) return false; // Found an available 2-hour window!
+      }
+    }
+    return true; // No 2-hour window found
+  };
+
   const handleDayClick = (day) => {
-    if (isPast(day) || isOccupied(day)) return;
+    if (isPast(day) || isDayFullyBooked(day)) return;
     onChange(formatDate(day));
   };
 
@@ -182,7 +223,8 @@ const DatePicker = ({ terrainId, value, onChange, dark = false, minDate = null }
             const past = isPast(day);
             const selected = isSelected(day);
             const todayClass = isToday(day);
-            const disabled = past || !!occupied;
+            const fullyBooked = isDayFullyBooked(day);
+            const disabled = past || fullyBooked;
             const tooltip = getTooltip(day);
 
             return (
@@ -195,7 +237,7 @@ const DatePicker = ({ terrainId, value, onChange, dark = false, minDate = null }
                   past && 'datepicker__cell--past',
                   occupied && 'datepicker__cell--occupied',
                   occupied?.type === 'tournament' && 'datepicker__cell--tournament',
-                  disabled && 'datepicker__cell--disabled',
+                  fullyBooked && 'datepicker__cell--disabled',
                 ].filter(Boolean).join(' ')}
                 onClick={() => handleDayClick(day)}
                 onMouseEnter={() => !disabled && setHoveredDate(day)}

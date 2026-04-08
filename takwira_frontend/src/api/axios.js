@@ -40,4 +40,16 @@ api.interceptors.response.use(
   }
 );
 
+export const tournamentsApi = {
+  getRequests: () => api.get('tournaments/tournament-requests/'),
+  createRequest: (data) => api.post('tournaments/tournament-requests/', data),
+  approveRequest: (id, data) => api.patch(`tournaments/tournament-requests/${id}/approve/`, data),
+  rejectRequest: (id, data) => api.patch(`tournaments/tournament-requests/${id}/reject/`, data),
+  
+  getJoinRequests: () => api.get('tournaments/join-requests/'),
+  submitJoinRequest: (data) => api.post('tournaments/join-requests/', data),
+  approveJoin: (id) => api.patch(`tournaments/join-requests/${id}/approve/`),
+  rejectJoin: (id) => api.patch(`tournaments/join-requests/${id}/reject/`),
+};
+
 export default api;

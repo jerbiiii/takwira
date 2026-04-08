@@ -13,6 +13,7 @@ class Reservation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     terrain = models.ForeignKey(Terrain, on_delete=models.CASCADE, related_name='reservations')
     player = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reservations')
+    player_name = models.CharField(max_length=100, blank=True) # Custom name for the match
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()

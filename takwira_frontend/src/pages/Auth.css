@@ -149,12 +149,14 @@
   gap: 0.4rem;
 }
 
+.auth-form .form-group label,
 .form-group label {
   font-size: 11px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.4);
+  color: #ffffff !important;
   text-transform: uppercase;
   letter-spacing: 1.5px;
+  opacity: 1 !important;
 }
 
 .form-group input,

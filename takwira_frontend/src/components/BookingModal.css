@@ -113,13 +113,18 @@
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #000 !important;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.booking-form input[type="time"] {
+.booking-form label svg {
+  color: #000 !important;
+}
+
+.booking-form input[type="time"],
+.booking-form .form-input {
   padding: 14px 16px;
   border: 2px solid #d4ddd7;
   border-radius: 12px;
@@ -127,15 +132,23 @@
   font-weight: 600;
   transition: all 0.2s;
   background: #f8faf9;
-  color: var(--text);
+  color: #000 !important; /* Force black text color */
   width: 100%;
 }
 
-.booking-form input[type="time"]:focus {
+.booking-form input[type="time"]:focus,
+.booking-form .form-input:focus {
   outline: none;
   border-color: var(--green);
   background: #fff;
   box-shadow: 0 0 0 4px rgba(46, 139, 74, 0.1);
+}
+
+.form-help {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: -8px;
+  margin-left: 2px;
 }
 
 .booking-summary {

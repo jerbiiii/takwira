@@ -145,4 +145,49 @@
   .nav-links {
     display: none;
   }
+
+  /* New nav link styles */
+  .nav-links a.active {
+    color: #fff;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+    padding-bottom: 2px;
+  }
+
+  .nav-dash-link {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 5px 12px !important;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.2s !important;
+  }
+
+  .nav-dash-link:hover,
+  .nav-dash-link.active {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+  }
+
+  .nav-admin-link {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+    background: rgba(192, 57, 43, 0.2);
+    padding: 5px 12px !important;
+    border-radius: 20px;
+    border: 1px solid rgba(192, 57, 43, 0.3);
+    color: #e74c3c !important;
+    transition: all 0.2s !important;
+  }
+
+  .nav-admin-link:hover,
+  .nav-admin-link.active {
+    background: rgba(192, 57, 43, 0.35) !important;
+  }
+
+  .user-role-badge.admin-badge {
+    color: #e74c3c;
+  }
 }
