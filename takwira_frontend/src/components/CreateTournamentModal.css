@@ -229,3 +229,99 @@
 .modal-desc strong {
   color: #84ff00;
 }
+
+/* ─── White Modal Styling ─── */
+.modal-white {
+  background: #ffffff;
+  color: #000;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-white .header-title h2 {
+  color: #000;
+}
+
+.modal-white .close-btn {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-white .close-btn:hover {
+  color: #000;
+}
+
+.modal-white .form-group label {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-white .form-group input, 
+.modal-white .form-group select {
+  background: #f5f5f5;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #000;
+}
+
+.modal-white .form-group input:focus, 
+.modal-white .form-group select:focus {
+  border-color: #000;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.modal-white .modal-desc {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-white .modal-desc strong {
+  color: #000;
+}
+
+.modal-white .btn-cancel {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.modal-white .btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.modal-white .btn-submit {
+  background: var(--green);
+  color: #000;
+}
+
+.modal-white .date-tab {
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.modal-white .date-tab:hover {
+  background: #eaeaea;
+}
+
+.modal-white .date-tab--active {
+  border-color: #000;
+  background: rgba(0, 0, 0, 0.03);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.modal-white .date-tab--active .date-tab__label {
+  color: #000;
+}
+
+.modal-white .date-tab--active .date-tab__value {
+  color: #000;
+}
+
+.modal-white .date-tab__label {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-white .date-tab__value {
+  color: #333;
+}
+
+.modal-white .modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+

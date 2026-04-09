@@ -10,7 +10,7 @@ const MONTHS_FR = [
   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
 ];
 
-const DatePicker = ({ terrainId, value, onChange, onOccupiedInfo, dark = false, minDate = null }) => {
+const DatePicker = ({ terrainId, value, onChange, onOccupiedInfo, dark = false, minDate = null, excludeTournamentId = null, startDate = null, endDate = null }) => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
@@ -24,7 +24,11 @@ const DatePicker = ({ terrainId, value, onChange, onOccupiedInfo, dark = false, 
     setLoading(true);
     try {
       const res = await api.get(`terrains/${terrainId}/occupied-dates/`, {
-        params: { year: currentYear, month: currentMonth + 1 }
+        params: { 
+          year: currentYear, 
+          month: currentMonth + 1,
+          exclude_tournament: excludeTournamentId
+        }
       });
       const map = {};
       (res.data.occupied_dates || []).forEach(item => {
@@ -36,7 +40,7 @@ const DatePicker = ({ terrainId, value, onChange, onOccupiedInfo, dark = false, 
     } finally {
       setLoading(false);
     }
-  }, [terrainId, currentMonth, currentYear]);
+  }, [terrainId, currentMonth, currentYear, excludeTournamentId]);
 
   useEffect(() => {
     fetchOccupiedDates();
@@ -97,9 +101,36 @@ const DatePicker = ({ terrainId, value, onChange, onOccupiedInfo, dark = false, 
   };
 
   const isPast = (day) => {
-    const d = new Date(currentYear, currentMonth, day);
+    const dStr = formatDate(day);
+    const d = new Date(dStr + 'T00:00:00');
+    
+    // Check against real today
     const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    return d < todayMidnight;
+    if (d < todayMidnight) return true;
+
+    // Check against custom minDate if provided
+    if (minDate) {
+      const minD = new Date(minDate + 'T00:00:00');
+      if (d < minD) return true;
+    }
+    
+    return false;
+  };
+
+  const isInRange = (day) => {
+    if (!startDate || !endDate) return false;
+    const d = formatDate(day);
+    return d > startDate && d < endDate;
+  };
+
+  const isRangeStart = (day) => {
+    if (!startDate) return false;
+    return formatDate(day) === startDate;
+  };
+
+  const isRangeEnd = (day) => {
+    if (!endDate) return false;
+    return formatDate(day) === endDate;
   };
 
   const isOccupied = (day) => {
@@ -149,6 +180,7 @@ const DatePicker = ({ terrainId, value, onChange, onOccupiedInfo, dark = false, 
     if (isPast(day) || isDayFullyBooked(day)) return;
     onChange(formatDate(day));
   };
+
 
   const daysInMonth = getDaysInMonth(currentMonth, currentYear);
   const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
@@ -238,6 +270,9 @@ const DatePicker = ({ terrainId, value, onChange, onOccupiedInfo, dark = false, 
                   occupied && 'datepicker__cell--occupied',
                   occupied?.type === 'tournament' && 'datepicker__cell--tournament',
                   fullyBooked && 'datepicker__cell--disabled',
+                  isInRange(day) && 'datepicker__cell--in-range',
+                  isRangeStart(day) && 'datepicker__cell--range-start',
+                  isRangeEnd(day) && 'datepicker__cell--range-end',
                 ].filter(Boolean).join(' ')}
                 onClick={() => handleDayClick(day)}
                 onMouseEnter={() => !disabled && setHoveredDate(day)}

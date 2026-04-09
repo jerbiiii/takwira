@@ -26,7 +26,12 @@ class TerrainViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        # Admin gets all terrains, others get only active ones
+        if self.request.user.is_authenticated and getattr(self.request.user, 'role', '') == 'admin':
+            queryset = Terrain.objects.all().order_by('-created_at')
+        else:
+            queryset = Terrain.objects.filter(is_active=True).order_by('-created_at')
+
         city = self.request.query_params.get('city')
         lat = self.request.query_params.get('lat')
         lng = self.request.query_params.get('lng')
@@ -35,7 +40,10 @@ class TerrainViewSet(viewsets.ModelViewSet):
         if city:
             queryset = queryset.filter(city__icontains=city)
 
-        if lat and lng:
+        # Bypass lat/lng filter for admin so they can see all terrains
+        is_admin = self.request.user.is_authenticated and getattr(self.request.user, 'role', '') == 'admin'
+        
+        if lat and lng and not is_admin:
             try:
                 lat = float(lat)
                 lng = float(lng)
@@ -101,12 +109,16 @@ class TerrainViewSet(viewsets.ModelViewSet):
             })
 
         # 2. Find active tournaments overlapping this month
+        exclude_tournament = request.query_params.get('exclude_tournament')
         tournaments = Tournament.objects.filter(
             terrain=terrain,
             status__in=['open', 'ongoing'],
             start_date__lte=month_end,
             end_date__gte=month_start
         )
+        if exclude_tournament:
+            tournaments = tournaments.exclude(id=exclude_tournament)
+
         for tournament in tournaments:
             # Mark each day of the tournament within this month
             t_start = max(tournament.start_date, month_start)

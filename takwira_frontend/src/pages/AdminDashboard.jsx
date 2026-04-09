@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy, Calendar, MapPin, Users, CheckCircle, XCircle,
   AlertCircle, Activity, Clock, Loader, Eye, RefreshCw,
-  TrendingUp, Shield, ChevronDown, ChevronUp, Send, Zap, MessageSquare
+  TrendingUp, Shield, ChevronDown, ChevronUp, Send, Zap, MessageSquare, Edit2, Trash2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import CreateTournamentModal from '../components/CreateTournamentModal';
 import './AdminDashboard.css';
 
 const StatusBadge = ({ status }) => {
@@ -37,6 +38,8 @@ const AdminDashboard = () => {
   const [processingId, setProcessingId] = useState(null);
   const [expandedReq, setExpandedReq] = useState(null);
   const [noteInputs, setNoteInputs] = useState({});
+  const [isTourModalOpen, setIsTourModalOpen] = useState(false);
+  const [editingTournament, setEditingTournament] = useState(null);
 
   useEffect(() => {
     if (user?.role !== 'admin') { navigate('/'); return; }
@@ -84,6 +87,50 @@ const AdminDashboard = () => {
       toast.error('Erreur lors du refus.');
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  const handleEditTournament = (t) => {
+    setEditingTournament(t);
+    setIsTourModalOpen(true);
+  };
+
+  const handleDeleteTournament = async (id) => {
+    if (window.confirm("Voulez-vous vraiment supprimer ce tournoi ?")) {
+      try {
+        await api.delete(`tournaments/${id}/`);
+        toast.success("Tournoi supprimé.");
+        fetchAll();
+      } catch (err) {
+        toast.error("Erreur lors de la suppression du tournoi.");
+      }
+    }
+  };
+
+  const handleEditReservation = async (r) => {
+    const status = window.prompt("Entrez le nouveau statut (confirmed, pending, cancelled):", r.status);
+    if (status && ['confirmed', 'pending', 'cancelled'].includes(status.toLowerCase())) {
+      try {
+        await api.patch(`reservations/${r.id}/`, { status: status.toLowerCase() });
+        toast.success("Statut de la réservation mis à jour !");
+        fetchAll();
+      } catch {
+        toast.error("Erreur lors de la mise à jour.");
+      }
+    } else if (status) {
+      toast.error("Statut invalide.");
+    }
+  };
+
+  const handleDeleteReservation = async (id) => {
+    if (window.confirm("Voulez-vous vraiment supprimer cette réservation ?")) {
+      try {
+        await api.delete(`reservations/${id}/`);
+        toast.success("Réservation supprimée.");
+        fetchAll();
+      } catch (err) {
+        toast.error("Erreur lors de la suppression de la réservation.");
+      }
     }
   };
 
@@ -321,7 +368,7 @@ const AdminDashboard = () => {
                 ) : (
                   <div className="adm-table">
                     <div className="adm-table-head">
-                      <span>Terrain</span><span>Joueur</span><span>Date</span><span>Horaire</span><span>Prix</span><span>Statut</span>
+                      <span>Terrain</span><span>Joueur</span><span>Date</span><span>Horaire</span><span>Prix</span><span>Statut</span><span>Actions</span>
                     </div>
                     {reservations.map((r, i) => (
                       <motion.div
@@ -339,6 +386,10 @@ const AdminDashboard = () => {
                         <span>{r.start_time} — {r.end_time}</span>
                         <span className="adm-price">{r.total_price} TND</span>
                         <span><StatusBadge status={r.status} /></span>
+                        <span className="adm-actions-cell">
+                          <button className="admin-btn edit" onClick={() => handleEditReservation(r)} title="Modifier"><Edit2 size={16} /></button>
+                          <button className="admin-btn delete" onClick={() => handleDeleteReservation(r.id)} title="Supprimer"><Trash2 size={16} /></button>
+                        </span>
                       </motion.div>
                     ))}
                   </div>
@@ -357,7 +408,7 @@ const AdminDashboard = () => {
                 ) : (
                   <div className="adm-table">
                     <div className="adm-table-head">
-                      <span>Nom</span><span>Organisateur</span><span>Terrain</span><span>Dates</span><span>Équipes</span><span>Statut</span>
+                      <span>Nom</span><span>Organisateur</span><span>Terrain</span><span>Dates</span><span>Équipes</span><span>Statut</span><span>Actions</span>
                     </div>
                     {tournaments.map((t, i) => (
                       <motion.div
@@ -373,6 +424,10 @@ const AdminDashboard = () => {
                         <span>{t.start_date} → {t.end_date}</span>
                         <span><Users size={12} /> {t.teams?.length || 0}/{t.max_teams}</span>
                         <span><StatusBadge status={t.status} /></span>
+                        <span className="adm-actions-cell">
+                          <button className="admin-btn edit" onClick={() => handleEditTournament(t)} title="Modifier"><Edit2 size={16} /></button>
+                          <button className="admin-btn delete" onClick={() => handleDeleteTournament(t.id)} title="Supprimer"><Trash2 size={16} /></button>
+                        </span>
                       </motion.div>
                     ))}
                   </div>
@@ -420,12 +475,14 @@ const AdminDashboard = () => {
                           <div className="adm-req-right">
                             <StatusBadge status={r.status} />
                             <span className="adm-req-date">{new Date(r.created_at).toLocaleDateString('fr-FR')}</span>
-                            <button
-                              className="adm-expand-btn"
-                              onClick={() => setExpandedReq(expandedReq === r.id ? null : r.id)}
-                            >
-                              {expandedReq === r.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                            </button>
+                            {r.status === 'pending' && (
+                              <button
+                                className="adm-expand-btn"
+                                onClick={() => setExpandedReq(expandedReq === r.id ? null : r.id)}
+                              >
+                                {expandedReq === r.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                              </button>
+                            )}
                           </div>
                         </div>
 
@@ -488,6 +545,17 @@ const AdminDashboard = () => {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {isTourModalOpen && (
+          <CreateTournamentModal
+            isOpen={isTourModalOpen}
+            onClose={() => setIsTourModalOpen(false)}
+            onSuccess={fetchAll}
+            editingTournament={editingTournament}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

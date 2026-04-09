@@ -105,7 +105,7 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
   return (
     <div className="modal-overlay">
       <motion.div
-        className="modal-content tournament-modal"
+        className="modal-content tournament-modal modal-white"
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -177,7 +177,11 @@ const CreateTournamentModal = ({ isOpen, onClose, onSuccess, editingTournament =
                   terrainId={formData.terrain}
                   value={activeDate === 'start' ? formData.start_date : formData.end_date}
                   onChange={activeDate === 'start' ? handleStartDateChange : handleEndDateChange}
-                  dark={true}
+                  dark={false}
+                  excludeTournamentId={editingTournament?.id}
+                  startDate={formData.start_date}
+                  endDate={formData.end_date}
+                  minDate={activeDate === 'end' ? formData.start_date : null}
                 />
               )}
             </div>

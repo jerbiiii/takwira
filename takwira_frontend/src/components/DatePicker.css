@@ -251,6 +251,29 @@
   color: #ff453a !important;
 }
 
+/* ─── RANGE SELECTION (BLUE) ─── */
+.datepicker__cell--in-range {
+  background: rgba(52, 152, 219, 0.1) !important;
+  border-radius: 0;
+  color: #2980b9;
+}
+
+.datepicker__cell--range-start {
+  background: #3498db !important;
+  color: #fff !important;
+  border-radius: 10px 0 0 10px;
+}
+
+.datepicker__cell--range-end {
+  background: #2980b9 !important;
+  color: #fff !important;
+  border-radius: 0 10px 10px 0;
+}
+
+.datepicker__cell--range-start.datepicker__cell--range-end {
+  border-radius: 10px;
+}
+
 /* Occupied dot indicator */
 .datepicker__occupied-dot {
   width: 5px;
