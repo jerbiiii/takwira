@@ -53,12 +53,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const res = await api.get('auth/me/');
+      setUser(prev => ({ ...prev, ...res.data }));
+      return { success: true };
+    } catch (err) {
+      console.error("Error refreshing user:", err);
+      return { success: false };
+    }
+  };
+
   const value = {
     user,
     loading,
     login,
     logout,
-    register
+    register,
+    refreshUser
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;

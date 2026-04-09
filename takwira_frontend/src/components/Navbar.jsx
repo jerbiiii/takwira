@@ -47,9 +47,16 @@ const Navbar = () => {
             <div className="user-menu">
               <div className="user-info-nav">
                 <span className="user-name">{user.username}</span>
-                <span className={`user-role-badge ${user.role === 'admin' ? 'admin-badge' : ''}`}>
-                  {user.role === 'admin' ? 'Admin' : 'Joueur'}
-                </span>
+                <div className="user-role-plan">
+                  <span className={`user-role-badge ${user.role === 'admin' ? 'admin-badge' : ''}`}>
+                    {user.role === 'admin' ? 'Admin' : 'Joueur'}
+                  </span>
+                  {user.subscription_plan_name && (
+                    <span className={`user-plan-badge plan-${user.subscription_plan_name.toLowerCase()}`}>
+                      • {user.subscription_plan_name}
+                    </span>
+                  )}
+                </div>
               </div>
               <button onClick={handleLogout} className="btn-logout" title="Déconnexion">
                 <LogOut size={20} />

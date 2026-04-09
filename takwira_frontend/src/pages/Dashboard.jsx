@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Trophy, Calendar, MapPin, Clock, CheckCircle, XCircle,
     AlertCircle, Plus, Users, ArrowRight, Activity, Star,
-    ChevronRight, Loader, Send
+    ChevronRight, Loader, Send, CreditCard
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
@@ -118,7 +118,13 @@ const Dashboard = () => {
                             <div className="dash-avatar">{user?.username?.[0]?.toUpperCase() || 'J'}</div>
                             <div>
                                 <p className="dash-welcome">Bienvenue,</p>
-                                <h1 className="dash-name">{user?.username} <span className="dash-role-chip">Joueur</span></h1>
+                                <h1 className="dash-name">
+                                    {user?.username} 
+                                    <span className="dash-role-chip">Joueur</span>
+                                    {user?.subscription_plan_name && (
+                                        <span className="dash-plan-chip">{user.subscription_plan_name}</span>
+                                    )}
+                                </h1>
                             </div>
                         </div>
                         <div className="dash-quick-actions">
@@ -130,6 +136,9 @@ const Dashboard = () => {
                             </Link>
                             <Link to="/request-tournament" className="quick-btn req-btn">
                                 <Plus size={16} /> Créer tournoi
+                            </Link>
+                            <Link to="/pricing" className="quick-btn pricing-btn">
+                                <CreditCard size={16} /> Abonnement
                             </Link>
                         </div>
                     </motion.div>

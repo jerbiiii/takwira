@@ -39,6 +39,15 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username']
 
     objects = UserManager()
+    
+    def save(self, *args, **kwargs):
+        if not self.subscription_plan:
+            try:
+                free_plan = Plan.objects.get(name='free')
+                self.subscription_plan = free_plan
+            except Plan.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email

@@ -138,7 +138,44 @@
   color: #fff;
 }
 
-.btn-select:hover {
+.btn-select:hover:not(:disabled) {
   background: var(--green);
   color: #fff;
+}
+
+.btn-select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.active-plan {
+  border: 2px solid var(--green) !important;
+  background: #f0faf4 !important;
+}
+
+.btn-active {
+  background: #e1f5e9 !important;
+  border-color: #27ae60 !important;
+  color: #27ae60 !important;
+}
+
+.active-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #27ae60;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

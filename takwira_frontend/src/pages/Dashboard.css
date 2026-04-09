@@ -103,6 +103,19 @@
     vertical-align: middle;
 }
 
+.dash-plan-chip {
+    font-family: var(--primary-font);
+    font-size: 11px;
+    font-weight: 700;
+    background: #f1c40f;
+    color: #2c3e50;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
 /* Quick Actions */
 .dash-quick-actions {
     display: flex;
@@ -150,6 +163,15 @@
 
 .req-btn:hover {
     background: #7d3c98;
+}
+
+.pricing-btn {
+    background: #27ae60;
+    color: #fff;
+}
+
+.pricing-btn:hover {
+    background: #219150;
 }
 
 /* Stats */

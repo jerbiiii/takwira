@@ -102,24 +102,41 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 1px;
 }
 
 .user-name {
   color: #fff;
   font-size: 13px;
   font-weight: 700;
+  line-height: 1.2;
+}
+
+.user-role-plan {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   line-height: 1;
 }
 
 .user-role-badge {
-  color: var(--green);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.user-plan-badge {
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  line-height: 1;
 }
+
+.plan-free { color: #aaa; }
+.plan-pro { color: #f1c40f; }
+.plan-club { color: #f39c12; }
 
 
 .btn-logout {

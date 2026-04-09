@@ -13,13 +13,16 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         token['email'] = user.email
         token['role'] = user.role
+        token['subscription_plan_name'] = user.subscription_plan.name if user.subscription_plan else 'free'
         return token
 
 class UserSerializer(serializers.ModelSerializer):
+    subscription_plan_name = serializers.CharField(source='subscription_plan.name', read_only=True, default='free')
+
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'phone', 'role', 'subscription_plan', 'avatar', 'created_at')
-        read_only_fields = ('id', 'created_at', 'role', 'subscription_plan')
+        fields = ('id', 'email', 'username', 'phone', 'role', 'subscription_plan', 'subscription_plan_name', 'avatar', 'created_at')
+        read_only_fields = ('id', 'created_at', 'role', 'subscription_plan', 'subscription_plan_name')
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])

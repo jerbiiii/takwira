@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { motion } from 'framer-motion';
-import { CheckCircle, Zap, Shield, Star } from 'lucide-react';
+import { CheckCircle, Zap, Shield, Star, Loader } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import './Pricing.css';
 
 const Pricing = () => {
+  const { user, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subscribingId, setSubscribingId] = useState(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -21,6 +27,26 @@ const Pricing = () => {
     };
     fetchPlans();
   }, []);
+
+  const handleSubscribe = async (planId) => {
+    if (!user) {
+      toast.error("Veuillez vous connecter pour vous abonner");
+      navigate('/login');
+      return;
+    }
+
+    setSubscribingId(planId);
+    try {
+      const res = await api.post('subscriptions/subscribe/', { plan_id: planId });
+      toast.success(res.data.status || "Abonnement réussi !");
+      await refreshUser();
+    } catch (err) {
+      console.error("Subscription error:", err);
+      toast.error(err.response?.data?.detail || "Erreur lors de l'abonnement");
+    } finally {
+      setSubscribingId(null);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -80,30 +106,48 @@ const Pricing = () => {
             initial="hidden"
             animate="visible"
           >
-            {plans.map((plan) => (
-              <motion.div 
-                key={plan.id} 
-                className={`plan-card ${plan.name.toLowerCase() === 'pro' ? 'popular' : ''}`}
-                variants={itemVariants}
-                whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
-              >
-                {plan.name.toLowerCase() === 'pro' && <div className="popular-badge">Recommandé</div>}
-                <div className="plan-icon">
-                  {getIcon(plan.name)}
-                </div>
-                <h3>{plan.name}</h3>
-                <div className="plan-price">
-                  {plan.price_monthly} <span>TND/mois</span>
-                </div>
-                <ul className="plan-features">
-                  <li><CheckCircle size={14} /> {plan.max_reservations} réservations/mois</li>
-                  {plan.can_create_tournament && <li><CheckCircle size={14} /> Création de tournois</li>}
-                  {plan.can_manage_terrain && <li><CheckCircle size={14} /> Gestion de terrains</li>}
-                  <li><CheckCircle size={14} /> Support {plan.name.toLowerCase() === 'free' ? 'Standard' : 'Prioritaire'}</li>
-                </ul>
-                <button className="btn-select">S'abonner</button>
-              </motion.div>
-            ))}
+            {plans.map((plan) => {
+              const isCurrentPlan = user?.subscription_plan === plan.id || 
+                                   (user?.subscription_plan_name && user.subscription_plan_name.toLowerCase() === plan.name.toLowerCase());
+              
+              return (
+                <motion.div 
+                  key={plan.id} 
+                  className={`plan-card ${plan.name.toLowerCase() === 'pro' ? 'popular' : ''} ${isCurrentPlan ? 'active-plan' : ''}`}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+                >
+                  {plan.name.toLowerCase() === 'pro' && <div className="popular-badge">Recommandé</div>}
+                  {isCurrentPlan && <div className="active-badge">Votre Plan Actuel</div>}
+                  <div className="plan-icon">
+                    {getIcon(plan.name)}
+                  </div>
+                  <h3>{plan.name}</h3>
+                  <div className="plan-price">
+                    {plan.price_monthly} <span>TND/mois</span>
+                  </div>
+                  <ul className="plan-features">
+                    <li><CheckCircle size={14} /> {plan.max_reservations} réservations/mois</li>
+                    {plan.can_create_tournament && <li><CheckCircle size={14} /> Création de tournois</li>}
+                    {plan.can_manage_terrain && <li><CheckCircle size={14} /> Gestion de terrains</li>}
+                    <li><CheckCircle size={14} /> Support {plan.name.toLowerCase() === 'free' ? 'Standard' : 'Prioritaire'}</li>
+                  </ul>
+                  <button 
+                    className={`btn-select ${isCurrentPlan ? 'btn-active' : ''}`}
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={isCurrentPlan || subscribingId === plan.id}
+                  >
+                    {subscribingId === plan.id ? (
+                      <Loader className="animate-spin" size={20} />
+                    ) : isCurrentPlan ? (
+                      "Plan Actuel"
+                    ) : (
+                      "S'abonner"
+                    )}
+                  </button>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
