@@ -134,9 +134,17 @@
   letter-spacing: 0.5px;
 }
 
-.plan-free { color: #aaa; }
-.plan-pro { color: #f1c40f; }
-.plan-club { color: #f39c12; }
+.plan-free {
+  color: #aaa;
+}
+
+.plan-pro {
+  color: #f1c40f;
+}
+
+.plan-club {
+  color: #f39c12;
+}
 
 
 .btn-logout {

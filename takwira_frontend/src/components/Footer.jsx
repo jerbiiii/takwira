@@ -7,11 +7,11 @@ const Footer = () => {
       <div className="container footer-container">
         <span className="footer-logo">TAKWIRA</span>
         <div className="footer-links">
-          <Link to="#">À propos</Link>
-          <Link to="#">Contact</Link>
-          <Link to="#">Confidentialité</Link>
+          <Link to="/about">À propos</Link>
+          <Link to="/contact">Contact</Link>
+          <Link to="/privacy">Confidentialité</Link>
         </div>
-        <span className="footer-copy">© 2025 Takwira. Tous droits réservés.</span>
+        <span className="footer-copy">© 2026 Takwira. Tous droits réservés.</span>
       </div>
     </footer>
   );

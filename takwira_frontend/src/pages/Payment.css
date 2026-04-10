@@ -1,0 +1,534 @@
+.payment-page {
+  min-height: calc(100vh - 64px);
+  background: linear-gradient(135deg, #0b1a10 0%, #060e08 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #fff;
+}
+
+.payment-container {
+  max-width: 1050px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.btn-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.8rem;
+  z-index: 10;
+}
+
+.btn-back:hover {
+  background: rgba(46, 139, 74, 0.2);
+  border-color: var(--green);
+  transform: translateX(-3px);
+}
+
+@media (max-width: 850px) {
+  .payment-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar Summary */
+.payment-summary {
+  background: rgba(46, 139, 74, 0.1);
+  padding: 3rem 2rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-header h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--green);
+}
+
+.summary-header p {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pay-plan-details {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.pay-plan-name {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+}
+
+.pay-plan-price {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #ffffff !important;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.pay-plan-price span {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7) !important;
+  display: block;
+  margin-top: -5px;
+}
+
+/* Form Area */
+.payment-form-area {
+  padding: 3rem;
+}
+
+.card-visual-wrapper {
+  margin-bottom: 3rem;
+  perspective: 1000px;
+}
+
+.visual-card {
+  width: 100%;
+  max-width: 500px;
+  height: 280px;
+  margin: 0 auto;
+  position: relative;
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+  border-radius: 24px;
+}
+
+.card-face {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  backface-visibility: hidden;
+  border-radius: 24px;
+  padding: 2.5rem;
+}
+
+.card-front {
+  z-index: 2;
+  transform: rotateY(0deg);
+  background: inherit; /* Handled by brand classes below */
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  background: #222;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Brand backgrounds apply to both faces or just front? Usually front has the design. 
+   We'll apply them to the visual-card and inherit. */
+.visual-card.visa .card-front, .visual-card.visa .card-back {
+  background: linear-gradient(135deg, #1a1f71 0%, #0056a0 100%);
+}
+
+.visual-card.mastercard .card-front, .visual-card.mastercard .card-back {
+  background: linear-gradient(135deg, #1e1e1e 0%, #000000 100%);
+}
+
+.visual-card.other .card-front, .visual-card.other .card-back, 
+.visual-card.card .card-front, .visual-card.card .card-back {
+  background: linear-gradient(135deg, #2e8b4a 0%, #1a3c26 100%);
+}
+
+/* Card Back Interior */
+.magnetic-strip {
+  width: 100%;
+  height: 50px;
+  background: #111;
+  margin-top: 30px;
+}
+
+.signature-area {
+  width: 80%;
+  height: 45px;
+  background: #fff;
+  margin: 20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 15px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.signature-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.05) 5px, rgba(0,0,0,0.05) 10px);
+}
+
+.cvv-display {
+  position: relative;
+  z-index: 2;
+  text-align: right;
+}
+
+.cvv-display label {
+  font-size: 0.5rem;
+  color: #666;
+  text-transform: uppercase;
+  display: block;
+}
+
+.cvv-display span {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #000;
+  letter-spacing: 2px;
+}
+
+.back-brand-logo {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  opacity: 0.5;
+}
+
+/* Realistic Elements */
+.card-inner-design {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-chip {
+  width: 55px;
+  height: 40px;
+  background: linear-gradient(135deg, #f1c40f 0%, #d4af37 100%);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 5px;
+  gap: 2px;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+}
+
+.chip-line {
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 2px;
+}
+
+.contactless-icon {
+  display: flex;
+  gap: 3px;
+  margin-left: 15px;
+  opacity: 0.6;
+}
+
+.wave {
+  width: 2px;
+  height: 15px;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.wave:nth-child(2) { height: 20px; }
+.wave:nth-child(3) { height: 25px; }
+
+.card-number-display {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.7rem;
+  letter-spacing: 4px;
+  word-spacing: 12px;
+  color: #fff;
+  text-shadow: 2px 3px 6px rgba(0,0,0,0.6);
+  margin: 2rem 0;
+  white-space: nowrap;
+}
+
+.card-info-group {
+  display: flex;
+  gap: 3rem;
+}
+
+.card-brand-display {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.visa-logo.small {
+  background: #1a1f71;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 0.7rem;
+}
+
+.visa-logo.large {
+  font-family: serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 2.2rem;
+  color: #fff;
+  letter-spacing: -1px;
+}
+
+.mastercard-logo {
+  display: flex;
+  align-items: center;
+}
+
+.mastercard-logo.small .mc-circle {
+  width: 16px;
+  height: 16px;
+}
+
+.mastercard-logo.large .mc-circle {
+  width: 32px;
+  height: 32px;
+}
+
+.mastercard-logo .mc-circle {
+  border-radius: 50%;
+}
+
+.mastercard-logo .mc-red { background: #eb001b; margin-right: -10px; }
+.mastercard-logo .mc-yellow { background: #f79e1b; opacity: 0.8; }
+
+.amex-logo.small {
+  background: #016fd0;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 900;
+  font-size: 0.6rem;
+}
+
+.amex-logo.large {
+  background: #016fd0;
+  padding: 8px 15px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.2rem;
+}
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-holder-display label, .card-expiry-display label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 2px;
+  display: block;
+}
+
+.card-holder-display span, .card-expiry-display span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Real-looking form */
+.payment-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-block label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.brand-badge-input {
+  position: absolute;
+  right: 12px;
+  background: var(--green);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  pointer-events: none;
+  min-width: 40px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.brand-badge-input svg {
+  display: block;
+}
+
+.input-block input, .input-block select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.2s;
+  appearance: none;
+}
+
+.input-block select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.input-block select option {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.expiry-selectors.invalid-date select {
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 0 4px rgba(255, 77, 77, 0.1);
+  color: #ff4d4d;
+}
+
+.card-expiry-display.invalid-date span {
+  color: #ff4d4d !important;
+  text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+}
+
+.expiry-selectors {
+  display: flex;
+  gap: 10px;
+}
+
+.input-block input:focus, .input-block select:focus {
+  outline: none;
+  border-color: var(--green);
+  background: rgba(46, 139, 74, 0.05);
+  box-shadow: 0 0 0 4px rgba(46, 139, 74, 0.1);
+}
+
+.btn-pay {
+  margin-top: 2rem;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s;
+}
+
+.btn-pay:hover:not(:disabled) {
+  background: #25703b;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(46, 139, 74, 0.3);
+}
+
+.btn-pay:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.success-overlay {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  text-align: center;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--green);
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.success-overlay h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.success-overlay p {
+  color: #666;
+}

@@ -56,7 +56,7 @@ const Player = ({ state }) => {
   const isRunning = state === 'runup';
 
   return (
-    <motion.g 
+    <motion.g
       style={{ transformOrigin: '160px 240px' }}
       animate={isRunning ? { x: [-150, 0] } : { x: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
@@ -146,7 +146,7 @@ const Player = ({ state }) => {
 
         <rect x="156" y="168" width="8" height="12" rx="4" fill="#d4a574" />
         <circle cx="160" cy="158" r="18" fill="#d4a574" />
-        
+
         {/* Facial Features */}
         <circle cx="167" cy="158" r="2.5" fill="#fff" />
         <circle cx="167.8" cy="158" r="1.5" fill="#333" />
@@ -195,9 +195,9 @@ const LoginAnimation = ({ isLoading, isSuccess, isError }) => {
       y: ballStart.y,
       rotate: 0,
     },
-    waiting: { 
-      x: ballStart.x, 
-      y: ballStart.y 
+    waiting: {
+      x: ballStart.x,
+      y: ballStart.y
     },
     shooting: {
       x: [ballStart.x, ballStart.x + 80, ballEnd.x],
@@ -213,10 +213,10 @@ const LoginAnimation = ({ isLoading, isSuccess, isError }) => {
       opacity: [1, 1, 0],
       transition: { duration: 0.8, times: [0, 0.5, 1], ease: 'easeOut' },
     },
-    scored: { 
-      x: ballEnd.x, 
-      y: ballEnd.y, 
-      rotate: 720 
+    scored: {
+      x: ballEnd.x,
+      y: ballEnd.y,
+      rotate: 720
     },
   };
 
@@ -300,19 +300,19 @@ const LoginAnimation = ({ isLoading, isSuccess, isError }) => {
       <svg viewBox="0 0 680 300" style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '62%', zIndex: 5, overflow: 'visible' }}>
         <GoalNet ripple={ripple} />
         <Player state={playerState} />
-        <motion.g 
+        <motion.g
           variants={ballVariants}
           initial="idle"
           animate={ballState}
         >
           <Football />
         </motion.g>
-        <motion.ellipse 
-          cx={ballStart.x} 
-          cy={ballStart.y + 14} 
-          rx="12" 
-          ry="4" 
-          fill="rgba(0,0,0,0.3)" 
+        <motion.ellipse
+          cx={ballStart.x}
+          cy={ballStart.y + 14}
+          rx="12"
+          ry="4"
+          fill="rgba(0,0,0,0.3)"
           animate={shadowVariants[ballState]}
         />
       </svg>

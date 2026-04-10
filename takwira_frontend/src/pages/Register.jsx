@@ -38,7 +38,7 @@ const Register = () => {
       setIsSuccess(true);
       toast.success('Compte créé ! Bienvenue dans l\'équipe.');
       // Let the card reveal animation play fully (≈5s)
-      setTimeout(() => navigate('/login', { state: { from } }), 5500);
+      setTimeout(() => navigate('/pricing'), 5500);
     } else {
       setTimeout(() => {
         setIsLoading(false);
@@ -92,7 +92,7 @@ const Register = () => {
                 </h2>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>
                   {isSuccess
-                    ? 'Compte créé avec succès. Redirection vers la connexion…'
+                    ? 'Compte créé avec succès. Redirection vers les plans…'
                     : 'Création de votre compte en cours…'}
                 </p>
               </motion.div>

@@ -107,21 +107,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleEditReservation = async (r) => {
-    const status = window.prompt("Entrez le nouveau statut (confirmed, pending, cancelled):", r.status);
-    if (status && ['confirmed', 'pending', 'cancelled'].includes(status.toLowerCase())) {
-      try {
-        await api.patch(`reservations/${r.id}/`, { status: status.toLowerCase() });
-        toast.success("Statut de la réservation mis à jour !");
-        fetchAll();
-      } catch {
-        toast.error("Erreur lors de la mise à jour.");
-      }
-    } else if (status) {
-      toast.error("Statut invalide.");
-    }
-  };
-
   const handleDeleteReservation = async (id) => {
     if (window.confirm("Voulez-vous vraiment supprimer cette réservation ?")) {
       try {
@@ -387,7 +372,6 @@ const AdminDashboard = () => {
                         <span className="adm-price">{r.total_price} TND</span>
                         <span><StatusBadge status={r.status} /></span>
                         <span className="adm-actions-cell">
-                          <button className="admin-btn edit" onClick={() => handleEditReservation(r)} title="Modifier"><Edit2 size={16} /></button>
                           <button className="admin-btn delete" onClick={() => handleDeleteReservation(r.id)} title="Supprimer"><Trash2 size={16} /></button>
                         </span>
                       </motion.div>

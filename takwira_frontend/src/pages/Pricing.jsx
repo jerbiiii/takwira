@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import './Pricing.css';
 
 const Pricing = () => {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,23 +28,28 @@ const Pricing = () => {
     fetchPlans();
   }, []);
 
-  const handleSubscribe = async (planId) => {
+  const handleSubscribe = async (plan) => {
     if (!user) {
       toast.error("Veuillez vous connecter pour vous abonner");
       navigate('/login');
       return;
     }
 
-    setSubscribingId(planId);
-    try {
-      const res = await api.post('subscriptions/subscribe/', { plan_id: planId });
-      toast.success(res.data.status || "Abonnement réussi !");
-      await refreshUser();
-    } catch (err) {
-      console.error("Subscription error:", err);
-      toast.error(err.response?.data?.detail || "Erreur lors de l'abonnement");
-    } finally {
-      setSubscribingId(null);
+    // If plan is FREE, subscribe immediately
+    if (plan.price_monthly === 0 || plan.name.toLowerCase() === 'free' || plan.name.toLowerCase() === 'gratuit') {
+      setSubscribingId(plan.id);
+      try {
+        const res = await api.post('subscriptions/subscribe/', { plan_id: plan.id });
+        toast.success(res.data.status || "Abonnement réussi !");
+        await refreshUser();
+      } catch (err) {
+        toast.error(err.response?.data?.detail || "Erreur lors de l'abonnement");
+      } finally {
+        setSubscribingId(null);
+      }
+    } else {
+      // For PAID plans, redirect to the new Payment page
+      navigate(`/payment?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}&price=${plan.price_monthly}`);
     }
   };
 
@@ -57,15 +62,16 @@ const Pricing = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
+    hidden: { opacity: 0, y: 30 },
     visible: { 
       opacity: 1, 
-      scale: 1,
+      y: 0,
       transition: { duration: 0.6, ease: "easeOut" }
     }
   };
 
-  if (loading) {
+  // Wait for both plans and user state to be determined
+  if (loading || authLoading) {
     return <div className="loading-screen">Chargement des tarifs...</div>;
   }
 
@@ -115,7 +121,14 @@ const Pricing = () => {
                   key={plan.id} 
                   className={`plan-card ${plan.name.toLowerCase() === 'pro' ? 'popular' : ''} ${isCurrentPlan ? 'active-plan' : ''}`}
                   variants={itemVariants}
-                  whileHover={{ scale: 1.03, transition: { duration: 0.2 } }}
+                  style={{ 
+                    scale: isCurrentPlan ? 1.15 : 1,
+                    zIndex: isCurrentPlan ? 10 : 1
+                  }}
+                  whileHover={{ 
+                    scale: isCurrentPlan ? 1.2 : 1.05, 
+                    transition: { duration: 0.2 } 
+                  }}
                 >
                   {plan.name.toLowerCase() === 'pro' && <div className="popular-badge">Recommandé</div>}
                   {isCurrentPlan && <div className="active-badge">Votre Plan Actuel</div>}
@@ -134,7 +147,7 @@ const Pricing = () => {
                   </ul>
                   <button 
                     className={`btn-select ${isCurrentPlan ? 'btn-active' : ''}`}
-                    onClick={() => handleSubscribe(plan.id)}
+                    onClick={() => handleSubscribe(plan)}
                     disabled={isCurrentPlan || subscribingId === plan.id}
                   >
                     {subscribingId === plan.id ? (
@@ -151,6 +164,8 @@ const Pricing = () => {
           </motion.div>
         </div>
       </section>
+
+
     </div>
   );
 };

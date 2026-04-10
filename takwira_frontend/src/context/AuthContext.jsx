@@ -9,21 +9,25 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('access');
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        // Assuming current login status depends on token validity
-        if (decoded.exp * 1000 > Date.now()) {
-          setUser(decoded);
-        } else {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('access');
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          if (decoded.exp * 1000 > Date.now()) {
+            setUser(decoded);
+            // Fetch fresh data from DB immediately to sync state (e.g., plan changes)
+            await refreshUser();
+          } else {
+            localStorage.clear();
+          }
+        } catch (e) {
           localStorage.clear();
         }
-      } catch (e) {
-        localStorage.clear();
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+    checkAuth();
   }, []);
 
   const login = async (email, password) => {
@@ -46,7 +50,13 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      await api.post('auth/register/', userData);
+      const res = await api.post('auth/register/', userData);
+      if (res.data.access) {
+        localStorage.setItem('access', res.data.access);
+        localStorage.setItem('refresh', res.data.refresh);
+        const decoded = jwtDecode(res.data.access);
+        setUser(decoded);
+      }
       return { success: true };
     } catch (err) {
       return { success: false, error: err.response?.data || 'Registration failed' };

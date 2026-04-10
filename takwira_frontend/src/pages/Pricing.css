@@ -5,7 +5,7 @@
 
 .pricing-header {
   background: var(--green-dark);
-  padding: 4rem 0;
+  padding: 2.5rem 0;
   text-align: center;
   color: #fff;
 }
@@ -34,7 +34,7 @@
 .plan-card {
   background: #fff;
   border-radius: 20px;
-  padding: 3rem 2rem;
+  padding: 2.2rem 1.6rem;
   text-align: center;
   border: 1px solid #e8edea;
   position: relative;
@@ -44,10 +44,14 @@
   transition: all 0.3s ease;
 }
 
-.plan-card.popular {
+.plan-card.popular:not(.active-plan) {
   border: 2px solid var(--green);
   box-shadow: 0 15px 40px rgba(46, 139, 74, 0.1);
-  transform: scale(1.05);
+  transform: scale(1.03);
+}
+
+.plan-card.active-plan {
+  transform: scale(1.15) !important;
 }
 
 .popular-badge {
@@ -66,8 +70,8 @@
 }
 
 .plan-icon {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   background: var(--green-light);
   color: var(--green);
   border-radius: 50%;
@@ -79,24 +83,24 @@
 
 .plan-card h3 {
   font-family: var(--display-font);
-  font-size: 28px;
-  letter-spacing: 1.5px;
-  color: var(--text);
+  font-size: 24px;
+  letter-spacing: 1.2px;
+  color: #000 !important;
   margin-bottom: 0.5rem;
   text-transform: uppercase;
 }
 
 .plan-price {
   font-family: var(--display-font);
-  font-size: 48px;
-  color: var(--text);
-  margin-bottom: 2rem;
+  font-size: 40px;
+  color: #000 !important;
+  margin-bottom: 1.5rem;
 }
 
 .plan-price span {
   font-family: var(--primary-font);
   font-size: 16px;
-  color: var(--muted);
+  color: #000 !important;
 }
 
 .plan-features {
@@ -149,8 +153,12 @@
 }
 
 .active-plan {
-  border: 2px solid var(--green) !important;
-  background: #f0faf4 !important;
+  border: 4px solid #27ae60 !important;
+  background: #ffffff !important;
+  transform: scale(1.15);
+  box-shadow: 0 40px 80px rgba(39, 174, 96, 0.2) !important;
+  z-index: 20;
+  overflow: visible;
 }
 
 .btn-active {
@@ -176,6 +184,11 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
