@@ -1,64 +1,121 @@
-# Takwira Football Reservation Platform
+# ⚽ Takwira — Plateforme de Réservation de Terrains de Football
 
-## Overview
-
-**Takwira** is a premium, full‑stack web application that enables users to book football fields, create and join tournaments, and manage reservations with a sleek, modern UI. The platform features:
-
-- **Dynamic reservation calendar** with real‑time availability.
-- **Tournament creation and subscription** flows.
-- **Animated authentication experience** using `framer-motion`.
-- **Responsive design** with dark‑mode support and glass‑morphism effects.
-- **Robust backend** powered by Django (Python) and a REST API.
-
-The goal is to provide a seamless, engaging experience for football enthusiasts while maintaining a clean, maintainable codebase.
+**Takwira** est une application web full-stack permettant aux joueurs de football en Tunisie de rechercher, réserver des terrains de football et de participer à des tournois — le tout via une interface moderne, animée et responsive.
 
 ---
 
-## Tech Stack
+## 🎯 Fonctionnalités principales
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 19, Vite, Tailwind‑CSS (custom vanilla CSS for premium design), Framer Motion, React Router, Axios |
-| Backend | Django (Python) – API endpoints for bookings, tournaments, authentication |
-| Database | SQLite (development) – can be swapped for PostgreSQL in production |
-| Styling | Vanilla CSS with modern design patterns (glass‑morphism, gradients, micro‑animations) |
-| Deployment | Vite dev server (`npm run dev`), production build (`npm run build`), optional Docker |
+### Pour les joueurs
+- **Recherche de terrains** — Parcourez les terrains disponibles avec filtrage par ville/gouvernorat et carte interactive (Leaflet).
+- **Réservation en ligne** — Consultez les créneaux disponibles via un calendrier dynamique et réservez instantanément.
+- **Tournois** — Inscrivez-vous à des tournois publics ou demandez la création d'un tournoi personnalisé.
+- **Dashboard joueur** — Suivez vos réservations, historique de matchs et inscriptions aux tournois.
+- **Abonnements Premium** — Trois formules (Gratuit, Pro à 29 TND/mois, Club à 79 TND/mois) avec paiement en ligne sécurisé.
+
+### Pour les administrateurs
+- **Gestion des terrains** — Créer, modifier et supprimer des terrains depuis le panneau admin.
+- **Gestion des tournois** — Créer des tournois, gérer les inscriptions et les résultats.
+- **Gestion des réservations** — Valider, annuler et suivre toutes les réservations de la plateforme.
+- **Demandes de tournois** — Examiner et approuver les demandes de création de tournois soumises par les joueurs.
+- **Logs d'activité** — Consulter l'historique des actions effectuées sur la plateforme avec filtrage avancé.
 
 ---
 
-## Getting Started
+## 🛠 Stack technique
 
-### Prerequisites
+| Couche | Technologies |
+|--------|-------------|
+| **Frontend** | React 19, Vite 8, React Router 7, Framer Motion, Axios, Lucide Icons, Leaflet / React-Leaflet |
+| **Backend** | Django (Python), Django REST Framework |
+| **Base de données** | SQLite (développement) — compatible PostgreSQL en production |
+| **Styling** | Vanilla CSS avec design premium (glassmorphism, gradients, micro-animations, dark mode) |
+| **Authentification** | JWT (JSON Web Tokens) via `jwt-decode` |
 
-- **Node.js** (>= 20) and **npm**
-- **Python** (>= 3.11) and **pip**
-- **Git**
+---
 
-### Clone the Repository
+## 📁 Structure du projet
 
-```bash
-git clone https://github.com/your‑org/takwira.git
-cd "Marketing App"
+```
+Marketing App/
+├── takwira_backend/          # API Django
+│   ├── apps/
+│   │   ├── users/            # Authentification et gestion des utilisateurs
+│   │   ├── terrains/         # CRUD terrains + statistiques plateforme
+│   │   ├── reservations/     # Système de réservation
+│   │   ├── tournaments/      # Gestion des tournois
+│   │   ├── subscriptions/    # Plans d'abonnement et paiements
+│   │   ├── logs/             # Journalisation des actions admin
+│   │   └── utils/            # Utilitaires partagés
+│   ├── takwira/              # Configuration Django (settings, urls, wsgi)
+│   └── manage.py
+│
+├── takwira_frontend/         # Application React
+│   └── src/
+│       ├── pages/            # Pages de l'application
+│       │   ├── Home.jsx          # Page d'accueil avec hero, stats, pricing
+│       │   ├── Terrains.jsx      # Liste et carte des terrains
+│       │   ├── Tournaments.jsx   # Liste des tournois
+│       │   ├── Dashboard.jsx     # Espace joueur
+│       │   ├── AdminDashboard.jsx # Panneau d'administration
+│       │   ├── Login.jsx         # Connexion
+│       │   ├── Register.jsx      # Inscription
+│       │   ├── Pricing.jsx       # Page des tarifs
+│       │   ├── Payment.jsx       # Paiement avec carte 3D interactive
+│       │   ├── RequestTournament.jsx # Demande de tournoi
+│       │   ├── About.jsx         # À propos
+│       │   ├── Contact.jsx       # Contact
+│       │   └── Privacy.jsx       # Politique de confidentialité
+│       ├── components/       # Composants réutilisables
+│       │   ├── Navbar.jsx        # Barre de navigation
+│       │   ├── Footer.jsx        # Pied de page
+│       │   ├── BookingModal.jsx   # Modal de réservation
+│       │   ├── DatePicker.jsx     # Sélecteur de date custom
+│       │   ├── TimePicker.jsx     # Sélecteur d'heure custom
+│       │   ├── DateRangePicker.jsx # Sélecteur de plage de dates
+│       │   ├── LoginAnimation.jsx # Animation d'authentification
+│       │   └── ...
+│       ├── context/          # Contextes React (AuthContext)
+│       └── api/              # Configuration Axios
+│
+├── requirements.txt          # Dépendances Python
+└── README.md
 ```
 
-### Backend Setup
+---
+
+## 🚀 Installation et lancement
+
+### Prérequis
+
+- **Node.js** ≥ 20 et **npm**
+- **Python** ≥ 3.11 et **pip**
+- **Git**
+
+### Backend (Django)
 
 ```bash
-# Create a virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+# Cloner le repo
+git clone https://github.com/jerbiiii/takwira.git
+cd "Marketing App"
 
-# Install dependencies
+# Créer un environnement virtuel
+python -m venv venv
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # macOS/Linux
+
+# Installer les dépendances
 pip install -r requirements.txt
 
-# Apply migrations and start the server
+# Appliquer les migrations et démarrer le serveur
+cd takwira_backend
 python manage.py migrate
 python manage.py runserver
 ```
 
-The API will be available at `http://127.0.0.1:8000/`.
+Le serveur API sera disponible sur `http://127.0.0.1:8000/`.
 
-### Frontend Setup
+### Frontend (React + Vite)
 
 ```bash
 cd takwira_frontend
@@ -66,46 +123,29 @@ npm install
 npm run dev
 ```
 
-The React app will be served at `http://localhost:5173/` and will automatically proxy API calls to the Django backend.
+L'application sera accessible sur `http://localhost:5173/` et les appels API seront automatiquement redirigés vers le backend Django.
 
 ---
 
-## Development Workflow
+## 🎨 Design et UX
 
-1. **Feature Branches** – Create a new branch for each feature or bug fix.
-2. **Linting** – Run `npm run lint` (frontend) and `flake8` (backend) before committing.
-3. **Testing** – Frontend unit tests with Jest; backend tests with Django's test suite.
-4. **Commit Messages** – Follow Conventional Commits (`feat:`, `fix:`, `chore:` etc.).
+L'interface de Takwira met l'accent sur une expérience visuelle premium :
 
----
-
-## Building for Production
-
-```bash
-npm run build   # Generates optimized static assets in /dist
-# Deploy the /dist folder with any static‑file server or integrate with Django's static handling.
-```
+- **Glassmorphism** — Effets de verre dépoli sur les cartes et modals.
+- **Animations Framer Motion** — Transitions de pages fluides, apparitions au scroll, animations d'authentification interactives (silhouette de joueur animée sur la page login).
+- **Dark mode** — Thème sombre cohérent avec palette de verts (#00E676, #1B5E20).
+- **Carte interactive** — Visualisation des terrains sur carte Leaflet avec géolocalisation.
+- **Responsive** — Interface adaptée mobile, tablette et desktop.
+- **Carte de paiement 3D** — Animation 3D interactive de carte bancaire lors du paiement.
 
 ---
 
-## Contributing
+## 📝 Licence
 
-Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to submit pull requests, report bugs, and propose new features.
-
----
-
-## License
-
-This project is licensed under the **MIT License** – see the `LICENSE` file for details.
+Ce projet est sous licence **MIT** — voir le fichier `LICENSE` pour plus de détails.
 
 ---
 
-## Screenshots
+## 📬 Contact
 
-*(Add screenshots of the home page, booking modal, and tournament flow here – you can generate images with the `generate_image` tool if needed.)*
-
----
-
-## Contact
-
-For questions or feedback, reach out to the maintainers at `contact@takwira.io`.
+Pour toute question ou suggestion, contactez l'équipe Takwira à `contact@takwira.io`.
