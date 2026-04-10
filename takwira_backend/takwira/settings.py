@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'apps.tournaments',
     'apps.subscriptions',
     'apps.logs',
+    'apps.reviews',
 ]
 
 MIDDLEWARE = [

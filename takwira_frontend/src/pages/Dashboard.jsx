@@ -79,6 +79,13 @@ const Dashboard = () => {
         }
     };
 
+    const isPast = (dateStr) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const resDate = new Date(dateStr);
+        return resDate < today;
+    };
+
     const stats = [
         { label: 'Réservations', value: reservations.length, icon: <Calendar size={20} />, color: 'var(--green)' },
         { label: 'Tournois rejoints', value: myTournaments.length, icon: <Trophy size={20} />, color: '#e67e22' },
@@ -228,7 +235,7 @@ const Dashboard = () => {
                                                 <div className="hcard-right">
                                                     <div className="hcard-price">{r.total_price} TND</div>
                                                     <StatusBadge status={r.status} />
-                                                    {r.status !== 'cancelled' && (
+                                                    {r.status !== 'cancelled' && !isPast(r.date) && (
                                                         <button
                                                             className="btn-cancel-small"
                                                             onClick={() => handleCancel(r.id)}

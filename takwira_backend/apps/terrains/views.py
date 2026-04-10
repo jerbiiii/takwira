@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Avg, Count
 from .models import Terrain
 from .serializers import TerrainSerializer
 from apps.users.permissions import IsAdminUser
@@ -11,7 +12,10 @@ import calendar
 from math import radians, cos, sin, asin, sqrt
 
 class TerrainViewSet(viewsets.ModelViewSet):
-    queryset = Terrain.objects.filter(is_active=True).order_by('-created_at')
+    queryset = Terrain.objects.filter(is_active=True).annotate(
+        average_rating=Avg('reviews__rating'),
+        reviews_count=Count('reviews')
+    ).order_by('-created_at')
     serializer_class = TerrainSerializer
 
     def get_permissions(self):
@@ -28,9 +32,15 @@ class TerrainViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Admin gets all terrains, others get only active ones
         if self.request.user.is_authenticated and getattr(self.request.user, 'role', '') == 'admin':
-            queryset = Terrain.objects.all().order_by('-created_at')
+            queryset = Terrain.objects.all().annotate(
+                average_rating=Avg('reviews__rating'),
+                reviews_count=Count('reviews')
+            ).order_by('-created_at')
         else:
-            queryset = Terrain.objects.filter(is_active=True).order_by('-created_at')
+            queryset = Terrain.objects.filter(is_active=True).annotate(
+                average_rating=Avg('reviews__rating'),
+                reviews_count=Count('reviews')
+            ).order_by('-created_at')
 
         city = self.request.query_params.get('city')
         lat = self.request.query_params.get('lat')

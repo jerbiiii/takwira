@@ -52,6 +52,12 @@ class ReservationViewSet(viewsets.ModelViewSet):
         reservation = self.get_object()
         if request.user != reservation.player and request.user.role != 'admin':
             return Response({'detail': 'Non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
+            
+        # Optional: Prevent canceling past reservations (except for admins)
+        from django.utils import timezone
+        if reservation.date < timezone.now().date() and request.user.role != 'admin':
+            return Response({'detail': 'Impossible d\'annuler une réservation passée.'}, status=status.HTTP_400_BAD_REQUEST)
+
         reservation.status = 'cancelled'
         reservation.save()
         return Response({'status': 'Réservation annulée'}, status=status.HTTP_200_OK)

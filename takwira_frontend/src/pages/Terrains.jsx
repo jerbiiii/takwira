@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, Zap, Plus, Edit2, Trash2, Crosshair, Map as MapIcon, List } from 'lucide-react';
+import { MapPin, Users, Zap, Plus, Edit2, Trash2, Crosshair, Map as MapIcon, List, Star, MessageSquare } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import BookingModal from '../components/BookingModal';
 import CreateTerrainModal from '../components/CreateTerrainModal';
+import ReviewsModal from '../components/ReviewsModal';
 import './Terrains.css';
 
 // Fix for default marker icons in Leaflet
@@ -35,6 +36,7 @@ const Terrains = () => {
   const [editingTerrain, setEditingTerrain] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [isMapVisible, setIsMapVisible] = useState(true);
+  const [reviewsTerrain, setReviewsTerrain] = useState(null);
   const { user } = useAuth();
 
   const fetchTerrains = async (lat, lng) => {
@@ -278,6 +280,16 @@ const Terrains = () => {
                     <span><MapPin size={14} /> {terrain.city}</span>
                     <span><Users size={14} /> {terrain.capacity} joueurs</span>
                   </div>
+                  <div className="terrain-rating-row" onClick={() => setReviewsTerrain(terrain)}>
+                    <div className="terrain-stars">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} size={14} className={`mini-star ${s <= Math.round(terrain.average_rating || 0) ? 'filled' : ''}`} />
+                      ))}
+                    </div>
+                    <span className="terrain-rating-num">{terrain.average_rating ? terrain.average_rating.toFixed(1) : '—'}</span>
+                    <span className="terrain-reviews-count">({terrain.reviews_count || 0} avis)</span>
+                    <MessageSquare size={13} className="reviews-link-icon" />
+                  </div>
                   {user ? (
                     user.role === 'player' ? (
                       <button 
@@ -318,6 +330,16 @@ const Terrains = () => {
             onClose={() => setIsManageOpen(false)} 
             onSuccess={fetchTerrains} 
             editingTerrain={editingTerrain}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {reviewsTerrain && (
+          <ReviewsModal
+            terrain={reviewsTerrain}
+            isOpen={!!reviewsTerrain}
+            onClose={() => { setReviewsTerrain(null); fetchTerrains(); }}
           />
         )}
       </AnimatePresence>
