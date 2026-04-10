@@ -134,6 +134,7 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
                     value={startTime}
                     onChange={setStartTime}
                     occupiedSlots={occupiedSlots}
+                    selectedDate={date}
                   />
                 </div>
 

@@ -5,7 +5,7 @@ import { Trophy, MapPin, Calendar, Users, Send, ArrowLeft, Loader, DollarSign } 
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import DatePicker from '../components/DatePicker';
+import DateRangePicker from '../components/DateRangePicker';
 import './RequestTournament.css';
 
 const RequestTournament = () => {
@@ -133,24 +133,15 @@ const RequestTournament = () => {
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Date de début *</label>
-                <DatePicker 
-                  terrainId={form.terrain} 
-                  value={form.start_date} 
-                  onChange={setStartDate} 
-                />
-              </div>
-              <div className="form-group">
-                <label>Date de fin *</label>
-                <DatePicker 
-                  terrainId={form.terrain} 
-                  value={form.end_date} 
-                  onChange={setEndDate}
-                  minDate={form.start_date}
-                />
-              </div>
+            <div className="form-group">
+              <label>Dates du tournoi *</label>
+              <DateRangePicker
+                terrainId={form.terrain}
+                startDate={form.start_date}
+                endDate={form.end_date}
+                onStartChange={setStartDate}
+                onEndChange={setEndDate}
+              />
             </div>
 
             <div className="form-row">

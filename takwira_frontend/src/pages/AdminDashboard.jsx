@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy, Calendar, MapPin, Users, CheckCircle, XCircle,
   AlertCircle, Activity, Clock, Loader, Eye, RefreshCw,
-  TrendingUp, Shield, ChevronDown, ChevronUp, Send, Zap, MessageSquare, Edit2, Trash2
+  TrendingUp, Shield, ChevronDown, ChevronUp, Send, Zap, MessageSquare, Edit2, Trash2,
+  FileText, Filter, Trash, Info, AlertTriangle, Ban, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
@@ -34,6 +35,9 @@ const AdminDashboard = () => {
   const [reservations, setReservations] = useState([]);
   const [tournaments, setTournaments] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logFilter, setLogFilter] = useState({ level: '', method: '' });
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
   const [expandedReq, setExpandedReq] = useState(null);
@@ -63,6 +67,38 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
+
+  const fetchLogs = async (filters = logFilter) => {
+    setLogsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.level) params.append('level', filters.level);
+      if (filters.method) params.append('method', filters.method);
+      params.append('limit', '200');
+      const res = await api.get(`logs/?${params.toString()}`);
+      setLogs(res.data);
+    } catch (err) {
+      toast.error('Erreur lors du chargement des logs.');
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  const handleClearLogs = async () => {
+    if (window.confirm('Voulez-vous vraiment supprimer tous les logs ?')) {
+      try {
+        await api.delete('logs/clear/');
+        toast.success('Logs supprimés.');
+        setLogs([]);
+      } catch {
+        toast.error('Erreur lors de la suppression.');
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'logs') fetchLogs();
+  }, [activeTab]);
 
   const handleApprove = async (id) => {
     setProcessingId(id);
@@ -149,6 +185,7 @@ const AdminDashboard = () => {
     { id: 'reservations', label: 'Réservations', icon: <Calendar size={15} />, count: reservations.length },
     { id: 'tournaments', label: 'Tournois', icon: <Trophy size={15} />, count: tournaments.length },
     { id: 'requests', label: 'Demandes', icon: <Send size={15} />, count: pendingRequests.length, alert: pendingRequests.length > 0 },
+    { id: 'logs', label: 'Logs', icon: <FileText size={15} /> },
   ];
 
   if (loading) {
@@ -520,6 +557,98 @@ const AdminDashboard = () => {
                             </motion.div>
                           )}
                         </AnimatePresence>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* LOGS */}
+            {activeTab === 'logs' && (
+              <div className="adm-list-section">
+                <div className="adm-list-header">
+                  <h3><FileText size={20} /> Logs d'activité</h3>
+                  <div className="adm-logs-actions">
+                    <button className="adm-refresh" onClick={() => fetchLogs()} title="Actualiser les logs">
+                      <RefreshCw size={16} />
+                    </button>
+                    <button className="adm-btn-clear-logs" onClick={handleClearLogs} title="Supprimer tous les logs">
+                      <Trash size={14} /> Vider
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filters */}
+                <div className="adm-logs-filters">
+                  <div className="adm-filter-group">
+                    <Filter size={14} />
+                    <select
+                      value={logFilter.level}
+                      onChange={e => {
+                        const f = { ...logFilter, level: e.target.value };
+                        setLogFilter(f);
+                        fetchLogs(f);
+                      }}
+                    >
+                      <option value="">Toute l'activité</option>
+                      <option value="success">✅ Succès</option>
+                      <option value="warning">⚠️ Avertissements</option>
+                      <option value="error">❌ Erreurs</option>
+                    </select>
+                  </div>
+                  <span className="adm-logs-count">{logs.length} événement{logs.length !== 1 ? 's' : ''}</span>
+                </div>
+
+                {logsLoading ? (
+                  <div className="adm-loading" style={{ minHeight: '200px' }}>
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                      <Loader size={24} color="var(--green)" />
+                    </motion.div>
+                  </div>
+                ) : logs.length === 0 ? (
+                  <div className="adm-empty">Aucune activité enregistrée pour le moment</div>
+                ) : (
+                  <div className="adm-logs-list">
+                    {logs.map((log, i) => (
+                      <motion.div
+                        key={log.id}
+                        className={`adm-log-entry level-${log.level}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(i * 0.02, 0.5) }}
+                      >
+                        <div className="adm-log-level-icon">
+                          {log.level === 'success' && <CheckCircle2 size={16} />}
+                          {log.level === 'info' && <Info size={16} />}
+                          {log.level === 'warning' && <AlertTriangle size={16} />}
+                          {log.level === 'error' && <Ban size={16} />}
+                        </div>
+                        <div className="adm-log-content">
+                          <div className="adm-log-message">{log.message}</div>
+                          <div className="adm-log-meta">
+                            <span className={`adm-log-method method-${log.method}`}>{log.method}</span>
+                            <span className="adm-log-path">{log.path}</span>
+                            <span className="adm-log-user">{log.user_email}</span>
+                            {log.ip_address && <span className="adm-log-ip">{log.ip_address}</span>}
+                          </div>
+                        </div>
+                        <div className="adm-log-right">
+                          <span className={`adm-log-status status-${log.status_code >= 400 ? 'error' : 'ok'}`}>
+                            {log.status_code}
+                          </span>
+                          {log.duration_ms != null && (
+                            <span className="adm-log-duration">
+                              <Clock size={10} /> {log.duration_ms}ms
+                            </span>
+                          )}
+                          <span className="adm-log-time">
+                            {new Date(log.timestamp).toLocaleString('fr-FR', {
+                              day: '2-digit', month: '2-digit',
+                              hour: '2-digit', minute: '2-digit', second: '2-digit'
+                            })}
+                          </span>
+                        </div>
                       </motion.div>
                     ))}
                   </div>

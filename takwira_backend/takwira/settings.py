@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'apps.reservations',
     'apps.tournaments',
     'apps.subscriptions',
+    'apps.logs',
 ]
 
 MIDDLEWARE = [
@@ -60,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.logs.middleware.ActivityLogMiddleware',
 ]
 
 ROOT_URLCONF = 'takwira.urls'

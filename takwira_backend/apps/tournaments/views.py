@@ -39,7 +39,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
     def join(self, request, pk=None):
         tournament = self.get_object()
         
-        if tournament.status != 'open':
+        if tournament.auto_status != 'open':
             return Response({'detail': 'Le tournoi n\'est pas ouvert aux inscriptions.'}, status=status.HTTP_400_BAD_REQUEST)
         
         if tournament.teams.count() >= tournament.max_teams:

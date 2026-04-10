@@ -189,23 +189,23 @@ const Tournaments = () => {
                             <div className="btn-enrolled">
                               <CheckCircle size={15} /> Inscrit à ce tournoi
                             </div>
-                          ) : (
+                          ) : tournament.status === 'open' ? (
                             <button
                               className="btn-join"
                               onClick={() => handleJoin(tournament)}
-                              disabled={tournament.status !== 'open' || isFull}
+                              disabled={isFull}
                             >
                               {isFull ? 'Complet' : "S'inscrire"} <ArrowRight size={15} />
                             </button>
-                          )
+                          ) : null
                         ) : (
                           <div className="admin-msg">Mode Admin</div>
                         )
-                      ) : (
+                      ) : tournament.status === 'open' ? (
                         <Link to="/login" className="btn-join secondary">
                           Se connecter pour s'inscrire
                         </Link>
-                      )}
+                      ) : null}
                     </div>
                   </motion.div>
                 );

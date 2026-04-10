@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/reservations/', include('apps.reservations.urls')),
     path('api/tournaments/', include('apps.tournaments.urls')),
     path('api/subscriptions/', include('apps.subscriptions.urls')),
+    path('api/logs/', include('apps.logs.urls')),
 ]
