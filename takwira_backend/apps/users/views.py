@@ -22,10 +22,16 @@ class RegisterView(generics.CreateAPIView):
         
         refresh = RefreshToken.for_user(user)
         # Add custom claims to match MyTokenObtainPairSerializer
+        refresh['user_id'] = str(user.id)
         refresh['username'] = user.username
         refresh['email'] = user.email
         refresh['role'] = user.role
         refresh['subscription_plan_name'] = user.subscription_plan.name if user.subscription_plan else 'free'
+        
+        plan = user.subscription_plan
+        refresh['can_create_tournament'] = plan.can_create_tournament if plan else False
+        refresh['can_manage_terrain'] = plan.can_manage_terrain if plan else False
+        refresh['max_reservations'] = plan.max_reservations if plan else 3
         
         return Response({
             "user": UserSerializer(user).data,

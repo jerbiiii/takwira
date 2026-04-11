@@ -176,6 +176,25 @@
   margin-bottom: 0;
 }
 
+.limit-warning {
+  background: #fff5f5;
+  border: 1px solid #fee2e2;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.limit-warning a {
+  color: #c53030;
+  text-decoration: underline;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
 .btn-confirm {
   background: var(--green);
   color: #fff;

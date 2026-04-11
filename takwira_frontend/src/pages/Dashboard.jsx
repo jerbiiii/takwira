@@ -49,8 +49,9 @@ const Dashboard = () => {
                 ]);
                 setReservations(resRes.data);
                 // Filter tournaments where the user is a captain of a team
+                const myId = user?.user_id || user?.id; // Handle both token and API data
                 const joined = tourRes.data.filter(t =>
-                    t.teams?.some(team => team.captain === user?.user_id)
+                    t.teams?.some(team => team.captain === myId)
                 );
                 setMyTournaments(joined);
                 setMyRequests(reqRes.data);
@@ -86,17 +87,20 @@ const Dashboard = () => {
         return resDate < today;
     };
 
+    const resLimit = user?.max_reservations || (user?.subscription_plan_name === 'free' ? 3 : 9999);
+    const resCount = user?.monthly_reservation_count || 0;
+
     const stats = [
-        { label: 'Réservations', value: reservations.length, icon: <Calendar size={20} />, color: 'var(--green)' },
+        { label: 'Réservations (Mois)', value: `${resCount}/${resLimit > 1000 ? '∞' : resLimit}`, icon: <Calendar size={20} />, color: 'var(--green)' },
         { label: 'Tournois rejoints', value: myTournaments.length, icon: <Trophy size={20} />, color: '#e67e22' },
-        { label: 'Demandes tournoi', value: myRequests.length, icon: <Send size={20} />, color: '#8e44ad' },
+        ...(user?.can_create_tournament ? [{ label: 'Demandes tournoi', value: myRequests.length, icon: <Send size={20} />, color: '#8e44ad' }] : []),
         { label: 'Confirmées', value: reservations.filter(r => r.status === 'confirmed').length, icon: <CheckCircle size={20} />, color: '#27ae60' },
     ];
 
     const tabs = [
         { id: 'reservations', label: 'Réservations', count: reservations.length },
         { id: 'tournaments', label: 'Mes Tournois', count: myTournaments.length },
-        { id: 'requests', label: 'Demandes créa.', count: myRequests.length },
+        ...(user?.can_create_tournament ? [{ id: 'requests', label: 'Demandes créa.', count: myRequests.length }] : []),
     ];
 
     if (loading) {
@@ -135,15 +139,6 @@ const Dashboard = () => {
                             </div>
                         </div>
                         <div className="dash-quick-actions">
-                            <Link to="/terrains" className="quick-btn terrain-btn">
-                                <MapPin size={16} /> Réserver terrain
-                            </Link>
-                            <Link to="/tournaments" className="quick-btn tour-btn">
-                                <Trophy size={16} /> Rejoindre tournoi
-                            </Link>
-                            <Link to="/request-tournament" className="quick-btn req-btn">
-                                <Plus size={16} /> Créer tournoi
-                            </Link>
                             <Link to="/pricing" className="quick-btn pricing-btn">
                                 <CreditCard size={16} /> Abonnement
                             </Link>
@@ -305,11 +300,8 @@ const Dashboard = () => {
                             <div className="history-section">
                                 <div className="requests-header-row">
                                     <p className="requests-info">
-                                        Soumettez une demande de création de tournoi. L'admin l'examinera et vous notifiera.
+                                        Consultez l'historique de vos demandes de création de tournoi.
                                     </p>
-                                    <Link to="/request-tournament" className="quick-btn req-btn">
-                                        <Plus size={14} /> Nouvelle demande
-                                    </Link>
                                 </div>
                                 {myRequests.length === 0 ? (
                                     <EmptyState

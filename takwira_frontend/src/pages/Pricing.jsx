@@ -7,6 +7,43 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import './Pricing.css';
 
+const PLAN_FEATURES = {
+  free: [
+    "Recherche de terrains",
+    "3 réservations par mois",
+    "Carte interactive",
+    "Profil joueur",
+    "Accès aux tournois publics",
+    "Support standard",
+  ],
+  gratuit: [
+    "Recherche de terrains",
+    "3 réservations par mois",
+    "Carte interactive",
+    "Profil joueur",
+    "Accès aux tournois publics",
+    "Support standard",
+  ],
+  pro: [
+    "Réservations illimitées",
+    "Création de tournois",
+    "Gestion d'équipe",
+    "Paiement en ligne sécurisé",
+    "Notifications prioritaires",
+    "Historique complet des matchs",
+    "Support prioritaire",
+  ],
+  club: [
+    "Tout le plan Pro",
+    "Gestion de terrain (propriétaire)",
+    "Plusieurs terrains gérables",
+    "Tableau de bord analytics",
+    "Statistiques avancées",
+    "Promotion sur la plateforme",
+    "Support VIP 24/7",
+  ],
+};
+
 const Pricing = () => {
   const { user, refreshUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -35,7 +72,6 @@ const Pricing = () => {
       return;
     }
 
-    // If plan is FREE, subscribe immediately
     if (plan.price_monthly === 0 || plan.name.toLowerCase() === 'free' || plan.name.toLowerCase() === 'gratuit') {
       setSubscribingId(plan.id);
       try {
@@ -48,7 +84,6 @@ const Pricing = () => {
         setSubscribingId(null);
       }
     } else {
-      // For PAID plans, redirect to the new Payment page
       navigate(`/payment?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}&price=${plan.price_monthly}`);
     }
   };
@@ -63,14 +98,13 @@ const Pricing = () => {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: { duration: 0.6, ease: "easeOut" }
     }
   };
 
-  // Wait for both plans and user state to be determined
   if (loading || authLoading) {
     return <div className="loading-screen">Chargement des tarifs...</div>;
   }
@@ -87,6 +121,10 @@ const Pricing = () => {
       default:
         return <CheckCircle size={24} />;
     }
+  };
+
+  const getFeatures = (name) => {
+    return PLAN_FEATURES[name.toLowerCase()] || [];
   };
 
   return (
@@ -106,28 +144,29 @@ const Pricing = () => {
 
       <section className="pricing-list">
         <div className="container">
-          <motion.div 
+          <motion.div
             className="pricing-grid"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
             {plans.map((plan) => {
-              const isCurrentPlan = user?.subscription_plan === plan.id || 
-                                   (user?.subscription_plan_name && user.subscription_plan_name.toLowerCase() === plan.name.toLowerCase());
-              
+              const isCurrentPlan = user?.subscription_plan === plan.id ||
+                (user?.subscription_plan_name && user.subscription_plan_name.toLowerCase() === plan.name.toLowerCase());
+              const features = getFeatures(plan.name);
+
               return (
-                <motion.div 
-                  key={plan.id} 
+                <motion.div
+                  key={plan.id}
                   className={`plan-card ${plan.name.toLowerCase() === 'pro' ? 'popular' : ''} ${isCurrentPlan ? 'active-plan' : ''}`}
                   variants={itemVariants}
-                  style={{ 
+                  style={{
                     scale: isCurrentPlan ? 1.15 : 1,
                     zIndex: isCurrentPlan ? 10 : 1
                   }}
-                  whileHover={{ 
-                    scale: isCurrentPlan ? 1.2 : 1.05, 
-                    transition: { duration: 0.2 } 
+                  whileHover={{
+                    scale: isCurrentPlan ? 1.2 : 1.05,
+                    transition: { duration: 0.2 }
                   }}
                 >
                   {plan.name.toLowerCase() === 'pro' && <div className="popular-badge">Recommandé</div>}
@@ -140,12 +179,11 @@ const Pricing = () => {
                     {plan.price_monthly} <span>TND/mois</span>
                   </div>
                   <ul className="plan-features">
-                    <li><CheckCircle size={14} /> {plan.max_reservations} réservations/mois</li>
-                    {plan.can_create_tournament && <li><CheckCircle size={14} /> Création de tournois</li>}
-                    {plan.can_manage_terrain && <li><CheckCircle size={14} /> Gestion de terrains</li>}
-                    <li><CheckCircle size={14} /> Support {plan.name.toLowerCase() === 'free' ? 'Standard' : 'Prioritaire'}</li>
+                    {features.map((feature, index) => (
+                      <li key={index}><CheckCircle size={14} /> {feature}</li>
+                    ))}
                   </ul>
-                  <button 
+                  <button
                     className={`btn-select ${isCurrentPlan ? 'btn-active' : ''}`}
                     onClick={() => handleSubscribe(plan)}
                     disabled={isCurrentPlan || subscribingId === plan.id}
@@ -164,8 +202,6 @@ const Pricing = () => {
           </motion.div>
         </div>
       </section>
-
-
     </div>
   );
 };

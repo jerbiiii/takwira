@@ -10,7 +10,7 @@ import TimePicker from './TimePicker';
 import './BookingModal.css';
 
 const BookingModal = ({ terrain, isOpen, onClose }) => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const location = useLocation();
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -39,6 +39,7 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
       });
       setSuccess(true);
       toast.success('Terrain réservé avec succès !');
+      await refreshUser();
       setTimeout(() => {
         onClose();
         setSuccess(false);
@@ -149,7 +150,18 @@ const BookingModal = ({ terrain, isOpen, onClose }) => {
                   </div>
                 </div>
 
-                <button type="submit" className="btn-confirm" disabled={loading || !date || !startTime || !playerName}>
+                {user?.monthly_reservation_count >= (user?.max_reservations || 3) && (
+                  <div className="limit-warning">
+                    ⚠️ Limite de réservations mensuelle atteinte ({user?.max_reservations || 3}). 
+                    <Link to="/pricing" onClick={onClose}> Augmentez votre forfait</Link>
+                  </div>
+                )}
+
+                <button 
+                  type="submit" 
+                  className="btn-confirm" 
+                  disabled={loading || !date || !startTime || !playerName || user?.monthly_reservation_count >= (user?.max_reservations || 3)}
+                >
                   {loading ? "Traitement..." : <><CreditCard size={18} /> Confirmer la réservation</>}
                 </button>
               </form>

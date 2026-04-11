@@ -19,8 +19,11 @@ class TerrainViewSet(viewsets.ModelViewSet):
     serializer_class = TerrainSerializer
 
     def get_permissions(self):
-        # Only admin can create, update, or delete terrains
+        # Admin or Club plan users with management permissions can create/modify terrains
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            user = self.request.user
+            if user.is_authenticated and (user.role == 'admin' or (user.subscription_plan and user.subscription_plan.can_manage_terrain)):
+                return [permissions.IsAuthenticated()]
             return [IsAdminUser()]
         if self.action == 'occupied_dates':
             return [permissions.AllowAny()]
@@ -37,7 +40,15 @@ class TerrainViewSet(viewsets.ModelViewSet):
                 reviews_count=Count('reviews')
             ).order_by('-created_at')
         else:
-            queryset = Terrain.objects.filter(is_active=True).annotate(
+            # Regular users see active terrains
+            queryset = Terrain.objects.filter(is_active=True)
+            
+            # If user has terrain management rights, they also see their own terrains (even if inactive)
+            if self.request.user.is_authenticated and self.request.user.subscription_plan and self.request.user.subscription_plan.can_manage_terrain:
+                from django.db.models import Q
+                queryset = Terrain.objects.filter(Q(is_active=True) | Q(owner=self.request.user))
+            
+            queryset = queryset.annotate(
                 average_rating=Avg('reviews__rating'),
                 reviews_count=Count('reviews')
             ).order_by('-created_at')

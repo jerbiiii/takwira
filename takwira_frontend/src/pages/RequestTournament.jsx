@@ -25,8 +25,16 @@ const RequestTournament = () => {
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
+    
+    // Check plan restriction
+    if (user && !user.can_create_tournament) {
+      toast.error("Votre forfait actuel ne permet pas de demander la création de tournois.");
+      navigate('/pricing');
+      return;
+    }
+
     api.get('terrains/').then(res => setTerrains(res.data)).catch(console.error);
-  }, [user]);
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

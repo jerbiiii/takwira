@@ -158,7 +158,7 @@ const Terrains = () => {
             <button className="btn-control highlight" onClick={getGeolocation}>
               <Crosshair size={18} /> Me localiser
             </button>
-            {user && user.role === 'admin' && (
+            {user && (user.role === 'admin' || user.can_manage_terrain) && (
               <motion.button 
                 className="btn-add-terrain" 
                 onClick={handleCreate}
@@ -262,7 +262,7 @@ const Terrains = () => {
                   )}
                   <div className="terrain-price">{terrain.price_per_hour} TND/h</div>
                   
-                  {user && user.role === 'admin' && (
+                  {user && (user.role === 'admin' || (user.can_manage_terrain && terrain.owner === (user.user_id || user.id))) && (
                     <div className="admin-actions-overlay">
                       <button className="admin-btn edit" onClick={() => handleEdit(terrain)} title="Modifier">
                         <Edit2 size={16} />

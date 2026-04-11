@@ -98,7 +98,7 @@ const Tournaments = () => {
                 <Plus size={20} /> Créer un tournoi
               </motion.button>
             )}
-            {user && user.role === 'player' && (
+            {user && user.role === 'player' && user.can_create_tournament && (
               <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
                 <Link to="/request-tournament" className="btn-request-tournament">
                   <Send size={16} /> Proposer un tournoi

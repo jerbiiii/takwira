@@ -74,6 +74,12 @@ class TournamentRequestViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def perform_create(self, serializer):
+        user = self.request.user
+        if not user.subscription_plan or not user.subscription_plan.can_create_tournament:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({
+                "detail": "Votre forfait actuel ne vous permet pas de créer des tournois. Veuillez passer à un forfait Pro ou Club."
+            })
         serializer.save(creator=self.request.user)
 
     @action(detail=True, methods=['post', 'patch'])

@@ -174,6 +174,17 @@
     background: #219150;
 }
 
+.disabled-btn {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+    cursor: not-allowed !important;
+    position: relative;
+}
+
+.disabled-btn:hover {
+    transform: none !important;
+}
+
 /* Stats */
 .dash-stats {
     display: grid;

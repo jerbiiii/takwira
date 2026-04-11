@@ -22,6 +22,26 @@ class ReservationViewSet(viewsets.ModelViewSet):
         return ReservationSerializer
 
     def perform_create(self, serializer):
+        user = self.request.user
+        plan = user.subscription_plan
+        
+        # Enforce monthly reservation limit
+        if plan:
+            from django.utils import timezone
+            now = timezone.now()
+            # Count reservations by this user in the current month
+            month_count = Reservation.objects.filter(
+                player=user,
+                date__year=now.year,
+                date__month=now.month
+            ).exclude(status='cancelled').count()
+            
+            if month_count >= plan.max_reservations:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({
+                    "detail": f"Limite de réservations mensuelle atteinte ({plan.max_reservations}). Veuillez augmenter votre forfait pour plus de réservations."
+                })
+
         terrain = serializer.validated_data['terrain']
         date = serializer.validated_data['date']
         start_time = serializer.validated_data['start_time']
