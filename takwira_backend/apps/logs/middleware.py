@@ -11,41 +11,41 @@ def _get_client_ip(request):
 
 # Whitelist of business events to log.
 # Each entry: (method, path_contains, success_only, label_fn)
-# label_fn(user_email) -> str
+# label_fn(user_info, status_code) -> str
 BUSINESS_EVENTS = [
     # Auth
-    ('POST',   'auth/login',                     True,  lambda u: f"Connexion de {u}"),
-    ('POST',   'auth/register',                  True,  lambda u: f"Nouveau compte créé : {u}"),
-    ('PATCH',  'auth/me',                        True,  lambda u: f"Profil modifié par {u}"),
-    ('PUT',    'auth/me',                        True,  lambda u: f"Profil modifié par {u}"),
+    ('POST',   'auth/login',                     False, lambda u, s: "Connexion réussie" if s < 400 else "Tentative de connexion échouée"),
+    ('POST',   'auth/register',                  False, lambda u, s: "Création de compte" if s < 400 else "Échec de création de compte"),
+    ('PATCH',  'auth/me',                        True,  lambda u, s: "Mise à jour du profil"),
+    ('PUT',    'auth/me',                        True,  lambda u, s: "Mise à jour du profil"),
 
     # Reservations
-    ('POST',   'reservations',                   True,  lambda u: f"Nouvelle réservation par {u}"),
-    ('DELETE', 'reservations',                   True,  lambda u: f"Réservation supprimée par {u}"),
-    ('PATCH',  'reservations',                   True,  lambda u: f"Réservation modifiée par {u}"),
-    ('PUT',    'reservations',                   True,  lambda u: f"Réservation modifiée par {u}"),
+    ('POST',   'reservations',                   True,  lambda u, s: "Nouvelle réservation effectuée"),
+    ('DELETE', 'reservations',                   True,  lambda u, s: "Réservation annulée"),
+    ('PATCH',  'reservations',                   True,  lambda u, s: "Modification d'une réservation"),
+    ('PUT',    'reservations',                   True,  lambda u, s: "Modification d'une réservation"),
 
     # Tournaments
-    ('POST',   'tournaments/tournament-requests', True, lambda u: f"Demande de tournoi soumise par {u}"),
-    ('PATCH',  'approve',                         True, lambda u: f"Demande de tournoi approuvée par {u}"),
-    ('PATCH',  'reject',                          True, lambda u: f"Demande de tournoi refusée par {u}"),
-    ('POST',   'tournaments/join-requests',       True, lambda u: f"Inscription à un tournoi par {u}"),
-    ('PATCH',  'join-requests',                   True, lambda u: f"Inscription au tournoi traitée par {u}"),
-    ('POST',   'tournaments',                     True, lambda u: f"Tournoi créé par {u}"),
-    ('PUT',    'tournaments',                     True, lambda u: f"Tournoi modifié par {u}"),
-    ('PATCH',  'tournaments',                     True, lambda u: f"Tournoi modifié par {u}"),
-    ('DELETE', 'tournaments',                     True, lambda u: f"Tournoi supprimé par {u}"),
+    ('POST',   'tournaments/tournament-requests', True, lambda u, s: "Nouvelle demande de création de tournoi"),
+    ('PATCH',  'approve',                         True, lambda u, s: "Approbation d'une demande de tournoi"),
+    ('PATCH',  'reject',                          True, lambda u, s: "Refus d'une demande de tournoi"),
+    ('POST',   'tournaments/join-requests',       True, lambda u, s: "Demande d'inscription à un tournoi"),
+    ('PATCH',  'join-requests',                   True, lambda u, s: "Traitement d'une inscription"),
+    ('POST',   'tournaments',                     True, lambda u, s: "Création d'un tournoi (Admin)"),
+    ('PUT',    'tournaments',                     True, lambda u, s: "Modification d'un tournoi"),
+    ('PATCH',  'tournaments',                     True, lambda u, s: "Modification d'un tournoi"),
+    ('DELETE', 'tournaments',                     True, lambda u, s: "Suppression d'un tournoi"),
 
     # Terrains
-    ('POST',   'terrains',                       True,  lambda u: f"Terrain ajouté par {u}"),
-    ('PUT',    'terrains',                       True,  lambda u: f"Terrain modifié par {u}"),
-    ('PATCH',  'terrains',                       True,  lambda u: f"Terrain modifié par {u}"),
-    ('DELETE', 'terrains',                       True,  lambda u: f"Terrain supprimé par {u}"),
+    ('POST',   'terrains',                       True,  lambda u, s: "Ajout d'un nouveau terrain"),
+    ('PUT',    'terrains',                       True,  lambda u, s: "Mise à jour d'un terrain"),
+    ('PATCH',  'terrains',                       True,  lambda u, s: "Mise à jour d'un terrain"),
+    ('DELETE', 'terrains',                       True,  lambda u, s: "Suppression d'un terrain"),
 
     # Subscriptions
-    ('POST',   'subscriptions',                  True,  lambda u: f"Abonnement souscrit par {u}"),
-    ('PATCH',  'subscriptions',                  True,  lambda u: f"Abonnement modifié par {u}"),
-    ('PUT',    'subscriptions',                  True,  lambda u: f"Abonnement modifié par {u}"),
+    ('POST',   'subscriptions',                  True,  lambda u, s: "Souscription à un abonnement"),
+    ('PATCH',  'subscriptions',                  True,  lambda u, s: "Changement de forfait"),
+    ('PUT',    'subscriptions',                  True,  lambda u, s: "Changement de forfait"),
 ]
 
 
@@ -74,18 +74,27 @@ def _get_level(status_code):
 
 
 class ActivityLogMiddleware:
-    """
-    Logs only meaningful business events (login, reservations, tournaments, etc.)
-    Ignores all raw GET requests and generic noise.
-    """
-
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        # Skip non-API paths immediately
         if not request.path.startswith('/api/'):
             return self.get_response(request)
+
+        # Pre-capture request body for auth endpoints (email/username extraction)
+        auth_data = {}
+        path_low = request.path.lower()
+        is_auth = 'login' in path_low or 'register' in path_low or 'signup' in path_low
+        
+        if is_auth and request.method == 'POST':
+            try:
+                import json
+                # We use request.body safely. If it fails, we move on.
+                body = json.loads(request.body)
+                auth_data['email'] = body.get('email') or body.get('identifier')
+                auth_data['username'] = body.get('username') or body.get('pseudo')
+            except Exception:
+                pass
 
         start_time = time.time()
         response = self.get_response(request)
@@ -94,40 +103,46 @@ class ActivityLogMiddleware:
         label_fn = _match_event(request.method, request.path, response.status_code)
         if label_fn:
             user = getattr(request, 'user', None)
-            user_email = ''
+            user_email = auth_data.get('email', '')
+            username = auth_data.get('username', '')
             user_obj = None
 
             if user and user.is_authenticated:
                 user_email = user.email
+                username = user.username
                 user_obj = user
 
-            # For login, extract email from response body if user not yet set
-            if not user_email and 'login' in request.path.lower():
-                try:
-                    import json
-                    body = json.loads(response.content)
-                    user_email = body.get('user', {}).get('email', 'inconnu')
-                except Exception:
-                    user_email = 'inconnu'
-
+            # Try manual JWT authentication if still anonymous
             if not user_email:
-                user_email = 'inconnu'
+                try:
+                    from rest_framework_simplejwt.authentication import JWTAuthentication
+                    auth = JWTAuthentication().authenticate(request)
+                    if auth:
+                        user_obj, _ = auth
+                        user_email = user_obj.email
+                        username = user_obj.username
+                except Exception:
+                    pass
 
+            # Final fallbacks to "inconnu"
+            final_name = username or user_email or 'inconnu'
+            
             try:
                 ActivityLog.objects.create(
                     user=user_obj,
-                    user_email=user_email,
+                    user_email=user_email[:255] if user_email else '',
+                    username=username[:255] if username else '',
                     method=request.method,
                     path=request.path,
                     status_code=response.status_code,
                     level=_get_level(response.status_code),
-                    message=label_fn(user_email),
+                    message=label_fn(final_name, response.status_code),
                     ip_address=_get_client_ip(request),
                     user_agent=request.META.get('HTTP_USER_AGENT', '')[:500],
                     duration_ms=duration_ms,
                 )
             except Exception:
-                pass  # Never break the request because of logging
+                pass
 
         return response
 

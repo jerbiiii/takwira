@@ -194,10 +194,12 @@ const LoginAnimation = ({ isLoading, isSuccess, isError }) => {
       x: ballStart.x,
       y: ballStart.y,
       rotate: 0,
+      opacity: 1,
     },
     waiting: {
       x: ballStart.x,
-      y: ballStart.y
+      y: ballStart.y,
+      opacity: 1,
     },
     shooting: {
       x: [ballStart.x, ballStart.x + 80, ballEnd.x],

@@ -199,6 +199,52 @@
   line-height: 1.5;
 }
 
+/* Phone Input with Prefix */
+.phone-input-container {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.phone-input-container:focus-within {
+  border-color: rgba(46, 139, 74, 0.7);
+  background: rgba(46, 139, 74, 0.08);
+}
+
+.phone-prefix {
+  padding: 0 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  font-size: 14px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  height: 46px;
+  display: flex;
+  align-items: center;
+}
+
+.phone-input-container input {
+  background: transparent !important;
+  border: none !important;
+  flex: 1;
+}
+
+.input-error {
+  border-color: rgba(192, 57, 43, 0.5) !important;
+}
+
+.input-hint-error {
+  font-size: 10px;
+  color: #ff8a80;
+  font-weight: 700;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
 /* Submit button */
 .auth-btn {
   margin-top: 0.8rem;
@@ -452,16 +498,17 @@
 /* Loading text */
 .scene-status-text {
   position: absolute;
-  bottom: 8%;
+  bottom: 38%;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 2px;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 3px;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 800;
   z-index: 10;
   white-space: nowrap;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
 /* Pulsing dot */

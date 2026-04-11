@@ -4,7 +4,7 @@ import {
   Trophy, Calendar, MapPin, Users, CheckCircle, XCircle,
   AlertCircle, Activity, Clock, Loader, Eye, RefreshCw,
   TrendingUp, Shield, ChevronDown, ChevronUp, Send, Zap, MessageSquare, Edit2, Trash2,
-  FileText, Filter, Trash, Info, AlertTriangle, Ban, CheckCircle2
+  FileText, Filter, Trash, Info, AlertTriangle, Ban, CheckCircle2, User
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
@@ -36,8 +36,9 @@ const AdminDashboard = () => {
   const [tournaments, setTournaments] = useState([]);
   const [requests, setRequests] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [logsCount, setLogsCount] = useState(0);
+  const [logsPage, setLogsPage] = useState(1);
   const [logsLoading, setLogsLoading] = useState(false);
-  const [logFilter, setLogFilter] = useState({ level: '', method: '' });
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
   const [expandedReq, setExpandedReq] = useState(null);
@@ -68,20 +69,32 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchLogs = async (filters = logFilter) => {
+  const fetchLogs = async (page = 1) => {
     setLogsLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (filters.level) params.append('level', filters.level);
-      if (filters.method) params.append('method', filters.method);
-      params.append('limit', '200');
-      const res = await api.get(`logs/?${params.toString()}`);
-      setLogs(res.data);
+      const res = await api.get(`logs/?page=${page}&limit=5`);
+      setLogs(res.data.results);
+      setLogsCount(res.data.count);
+      setLogsPage(page);
     } catch (err) {
       toast.error('Erreur lors du chargement des logs.');
     } finally {
       setLogsLoading(false);
     }
+  };
+
+  const getLogCategory = (log) => {
+    const path = (log.path || '').toLowerCase();
+    const msg = (log.message || '').toLowerCase();
+
+    if (path.includes('reservation')) return { type: 'reservation', icon: <Calendar size={16} />, color: 'var(--green)' };
+    if (path.includes('tournament')) return { type: 'tournament', icon: <Trophy size={16} />, color: '#e67e22' };
+    if (path.includes('auth') || path.includes('login') || path.includes('register') || path.includes('signup') || msg.includes('connexion') || msg.includes('déconnexion')) {
+      return { type: 'auth', icon: <User size={16} />, color: '#3498db' };
+    }
+    if (path.includes('terrain')) return { type: 'terrain', icon: <MapPin size={16} />, color: '#9b59b6' };
+
+    return { type: 'other', icon: <FileText size={16} />, color: '#7f8c8d' };
   };
 
   const handleClearLogs = async () => {
@@ -97,7 +110,7 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    if (activeTab === 'logs') fetchLogs();
+    if (activeTab === 'logs') fetchLogs(1);
   }, [activeTab]);
 
   const handleApprove = async (id) => {
@@ -579,25 +592,11 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                {/* Filters */}
-                <div className="adm-logs-filters">
-                  <div className="adm-filter-group">
-                    <Filter size={14} />
-                    <select
-                      value={logFilter.level}
-                      onChange={e => {
-                        const f = { ...logFilter, level: e.target.value };
-                        setLogFilter(f);
-                        fetchLogs(f);
-                      }}
-                    >
-                      <option value="">Toute l'activité</option>
-                      <option value="success">✅ Succès</option>
-                      <option value="warning">⚠️ Avertissements</option>
-                      <option value="error">❌ Erreurs</option>
-                    </select>
-                  </div>
-                  <span className="adm-logs-count">{logs.length} événement{logs.length !== 1 ? 's' : ''}</span>
+                {/* Filters Removed as requested, showing count only */}
+                <div className="adm-logs-info-bar">
+                  <span className="adm-logs-count">
+                    Total: <strong>{logsCount}</strong> activités répertoriées
+                  </span>
                 </div>
 
                 {logsLoading ? (
@@ -610,47 +609,63 @@ const AdminDashboard = () => {
                   <div className="adm-empty">Aucune activité enregistrée pour le moment</div>
                 ) : (
                   <div className="adm-logs-list">
-                    {logs.map((log, i) => (
-                      <motion.div
-                        key={log.id}
-                        className={`adm-log-entry level-${log.level}`}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: Math.min(i * 0.02, 0.5) }}
-                      >
-                        <div className="adm-log-level-icon">
-                          {log.level === 'success' && <CheckCircle2 size={16} />}
-                          {log.level === 'info' && <Info size={16} />}
-                          {log.level === 'warning' && <AlertTriangle size={16} />}
-                          {log.level === 'error' && <Ban size={16} />}
-                        </div>
-                        <div className="adm-log-content">
-                          <div className="adm-log-message">{log.message}</div>
-                          <div className="adm-log-meta">
-                            <span className={`adm-log-method method-${log.method}`}>{log.method}</span>
-                            <span className="adm-log-path">{log.path}</span>
-                            <span className="adm-log-user">{log.user_email}</span>
-                            {log.ip_address && <span className="adm-log-ip">{log.ip_address}</span>}
+                    {logs?.map((log, i) => {
+                      const cat = getLogCategory(log);
+                      return (
+                        <motion.div
+                          key={log.id}
+                          className={`adm-log-entry cat-${cat.type}`}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: Math.min(i * 0.02, 0.4) }}
+                        >
+                          <div className="adm-log-cat-icon" style={{ backgroundColor: `${cat.color}15`, color: cat.color }}>
+                            {cat.icon}
                           </div>
-                        </div>
-                        <div className="adm-log-right">
-                          <span className={`adm-log-status status-${log.status_code >= 400 ? 'error' : 'ok'}`}>
-                            {log.status_code}
-                          </span>
-                          {log.duration_ms != null && (
-                            <span className="adm-log-duration">
-                              <Clock size={10} /> {log.duration_ms}ms
-                            </span>
-                          )}
-                          <span className="adm-log-time">
-                            {new Date(log.timestamp).toLocaleString('fr-FR', {
-                              day: '2-digit', month: '2-digit',
-                              hour: '2-digit', minute: '2-digit', second: '2-digit'
-                            })}
-                          </span>
-                        </div>
-                      </motion.div>
-                    ))}
+                          <div className="adm-log-content">
+                            <div className="adm-log-message">
+                              {log.message}
+                              {log.level === 'error' && <span className="err-dot" title="Cette action a échoué"></span>}
+                            </div>
+                            <div className="adm-log-meta">
+                              <span className="adm-log-user">Utilisateur: <strong>{log.username || log.user_email}</strong></span>
+                              <span className="adm-log-time">
+                                <Clock size={11} />
+                                {new Date(log.timestamp).toLocaleString('fr-FR', {
+                                  day: '2-digit', month: '2-digit',
+                                  hour: '2-digit', minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+
+                    {/* Numerical Pagination */}
+                    {logsCount > 5 && (
+                      <div className="adm-pagination">
+                        {Array.from({ length: Math.ceil(logsCount / 5) }).map((_, i) => {
+                          const p = i + 1;
+                          const totalPages = Math.ceil(logsCount / 5);
+                          // Show only current page and its neighbors if too many pages
+                          if (p === 1 || p === totalPages || (p >= logsPage - 1 && p <= logsPage + 1)) {
+                            return (
+                              <button
+                                key={p}
+                                className={`adm-page-btn ${logsPage === p ? 'active' : ''}`}
+                                onClick={() => fetchLogs(p)}
+                              >
+                                {p}
+                              </button>
+                            );
+                          }
+                          if (p === 2 && logsPage > 3) return <span key="dots-1">...</span>;
+                          if (p === totalPages - 1 && logsPage < totalPages - 2) return <span key="dots-2">...</span>;
+                          return null;
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

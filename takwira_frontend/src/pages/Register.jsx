@@ -139,13 +139,24 @@ const Register = () => {
 
                   <div className="form-group">
                     <label>Téléphone</label>
-                    <input
-                      type="text"
-                      name="phone"
-                      placeholder="21 000 000"
-                      value={formData.phone}
-                      onChange={handleChange}
-                    />
+                    <div className="phone-input-container">
+                      <span className="phone-prefix">+216</span>
+                      <input
+                        type="text"
+                        name="phone"
+                        placeholder="21 000 000"
+                        value={formData.phone}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 8);
+                          setFormData(prev => ({ ...prev, phone: val }));
+                        }}
+                        className={formData.phone && formData.phone.length !== 8 ? 'input-error' : ''}
+                        required
+                      />
+                    </div>
+                    {formData.phone && formData.phone.length !== 8 && (
+                      <span className="input-hint-error">8 chiffres requis</span>
+                    )}
                   </div>
 
                   <div className="form-group">

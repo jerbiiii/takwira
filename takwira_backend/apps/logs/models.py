@@ -22,6 +22,7 @@ class ActivityLog(models.Model):
         related_name='activity_logs',
     )
     user_email = models.CharField(max_length=255, blank=True, default='')
+    username = models.CharField(max_length=255, blank=True, default='')
     method = models.CharField(max_length=10)  # GET, POST, PUT, PATCH, DELETE
     path = models.CharField(max_length=500)
     status_code = models.IntegerField(null=True, blank=True)

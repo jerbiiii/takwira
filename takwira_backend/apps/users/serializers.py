@@ -47,6 +47,15 @@ class UserSerializer(serializers.ModelSerializer):
                            'subscription_plan_details', 'monthly_reservation_count', 'max_reservations', 
                            'can_create_tournament', 'can_manage_terrain')
 
+    def validate_phone(self, value):
+        if not value:
+            return value
+        # Remove any non-digit characters
+        digits = ''.join(filter(str.isdigit, str(value)))
+        if len(digits) != 8:
+            raise serializers.ValidationError("Le numéro de téléphone doit comporter exactement 8 chiffres.")
+        return f"+216{digits}"
+
     def get_monthly_reservation_count(self, obj):
         from apps.reservations.models import Reservation
         from django.utils import timezone
@@ -63,6 +72,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password', 'phone', 'role')
+
+    def validate_phone(self, value):
+        if not value:
+            return value
+        digits = ''.join(filter(str.isdigit, str(value)))
+        if len(digits) != 8:
+            raise serializers.ValidationError("Le numéro de téléphone doit comporter exactement 8 chiffres.")
+        return f"+216{digits}"
 
     def create(self, validated_data):
         user = User.objects.create_user(
