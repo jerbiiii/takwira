@@ -156,7 +156,7 @@ class Tournament(models.Model):
             for g_name in group_names:
                 g_standings = self.get_group_standings_internal(g_name)
                 # Take top 2
-                winners.extend([s['team_id'] for s in g_standings[:2]])
+                winners.extend([s['id'] for s in g_standings[:2]])
             
             # Determine next phase based on number of winners
             num_winners = len(winners)
@@ -225,18 +225,36 @@ class Tournament(models.Model):
             if m.team2: group_teams.add(m.team2)
 
         for team in group_teams:
-            standings[team.id] = {'team_id': team.id, 'name': team.name, 'points': 0, 'gf': 0, 'ga': 0, 'gd': 0}
+            standings[team.id] = {
+                'id': team.id, 
+                'name': team.name, 
+                'played': 0, 'won': 0, 'drawn': 0, 'lost': 0,
+                'gf': 0, 'ga': 0, 'gd': 0, 'points': 0
+            }
 
         for m in matches:
-            standings[m.team1.id]['gf'] += m.score1
-            standings[m.team1.id]['ga'] += m.score2
-            standings[m.team2.id]['gf'] += m.score2
-            standings[m.team2.id]['ga'] += m.score1
-            if m.score1 > m.score2: standings[m.team1.id]['points'] += 3
-            elif m.score1 < m.score2: standings[m.team2.id]['points'] += 3
+            if not m.team1 or not m.team2:
+                continue
+            t1, t2 = m.team1.id, m.team2.id
+            standings[t1]['played'] += 1
+            standings[t2]['played'] += 1
+            standings[t1]['gf'] += m.score1
+            standings[t1]['ga'] += m.score2
+            standings[t2]['gf'] += m.score2
+            standings[t2]['ga'] += m.score1
+            if m.score1 > m.score2:
+                standings[t1]['won'] += 1
+                standings[t1]['points'] += 3
+                standings[t2]['lost'] += 1
+            elif m.score1 < m.score2:
+                standings[t2]['won'] += 1
+                standings[t2]['points'] += 3
+                standings[t1]['lost'] += 1
             else:
-                standings[m.team1.id]['points'] += 1
-                standings[m.team2.id]['points'] += 1
+                standings[t1]['drawn'] += 1
+                standings[t1]['points'] += 1
+                standings[t2]['drawn'] += 1
+                standings[t2]['points'] += 1
 
         for tid in standings:
             standings[tid]['gd'] = standings[tid]['gf'] - standings[tid]['ga']

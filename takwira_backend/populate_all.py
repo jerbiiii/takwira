@@ -132,42 +132,27 @@ def populate():
     # --- TOURNAMENTS ---
     print("Creating tournaments (Active, Finished, Archived)...")
     
-    # 1. Archived Tournament (Finished 10 days ago)
-    archived_date = today - timedelta(days=10)
-    t_archived = Tournament.objects.create(
-        name='Championnat Hiver 2025', organizer=admin, terrain=terrains[0],
-        start_date=archived_date - timedelta(days=20), end_date=archived_date,
-        max_teams=8, entry_fee=40, status='finished', tournament_type='knockout',
-        completed_at=datetime.combine(archived_date, time(20, 0))
-    )
-    
-    # 2. Recently Finished (Finished 2 days ago - NOT yet archived)
-    recent_date = today - timedelta(days=2)
-    t_recent = Tournament.objects.create(
-        name='Coupe du Printemps', organizer=admin, terrain=terrains[1],
-        start_date=recent_date - timedelta(days=10), end_date=recent_date,
-        max_teams=8, entry_fee=60, status='finished', tournament_type='knockout',
-        completed_at=datetime.combine(recent_date, time(21, 0))
-    )
-    
-    # 3. Ongoing Tournament
+    # 1. Ongoing Tournament
     t_ongoing = Tournament.objects.create(
-        name='Takwira Pro League', organizer=admin, terrain=terrains[2],
-        start_date=today - timedelta(days=5), end_date=today + timedelta(days=15),
+        name='Ligue des Champions Takwira', organizer=admin, terrain=terrains[2],
+        start_date=today - timedelta(days=2), end_date=today + timedelta(days=20),
         max_teams=16, entry_fee=100, status='ongoing', tournament_type='knockout'
     )
 
-    # Populate Teams for Tournament 3 (Ongoing)
+    # 2. Open for Registration
+    t_open = Tournament.objects.create(
+        name='Coupe d\'Été 2026', organizer=admin, terrain=terrains[3],
+        start_date=today + timedelta(days=15), end_date=today + timedelta(days=30),
+        max_teams=8, entry_fee=50, status='open', tournament_type='knockout'
+    )
+
+    # Populate Teams for Ongoing Tournament
     for i in range(16):
         team = Team.objects.create(name=f"Elite FC {i}", captain=players[i])
         t_ongoing.teams.add(team)
-        # Create some group matches for ongoing
-        if i % 2 == 0:
-            Match.objects.create(
-                tournament=t_ongoing, team1=team, team2=None, 
-                score1=0, score2=0, status='scheduled', 
-                phase='group', round_name='Phase de Poules'
-            )
+    
+    # Generate proper group stage for ongoing tournament
+    t_ongoing.generate_group_stage()
 
     # --- REQUESTS ---
     print("Creating tournament requests...")

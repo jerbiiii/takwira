@@ -157,68 +157,14 @@ class TournamentViewSet(viewsets.ModelViewSet):
     def group_standings(self, request, pk=None):
         """Returns standings broken down by group for the group phase."""
         tournament = self.get_object()
-        group_matches = tournament.matches.filter(phase='group', status='finished')
-        
-        # Get unique group names
-        group_names = group_matches.values_list('group_name', flat=True).distinct()
+        # Get unique group names from ALL group matches
+        all_group_matches = tournament.matches.filter(phase='group')
+        group_names = all_group_matches.values_list('group_name', flat=True).distinct()
         
         result = {}
         for group in group_names:
-            if not group:
-                continue
-            matches_in_group = group_matches.filter(group_name=group)
-            
-            # Find all teams that played in this group
-            team_ids = set()
-            for m in matches_in_group:
-                if m.team1_id:
-                    team_ids.add(m.team1_id)
-                if m.team2_id:
-                    team_ids.add(m.team2_id)
-            
-            standings = {}
-            from apps.tournaments.models import Team as TeamModel
-            for tid in team_ids:
-                try:
-                    team = TeamModel.objects.get(pk=tid)
-                    standings[tid] = {
-                        'id': str(tid),
-                        'name': team.name,
-                        'played': 0, 'won': 0, 'drawn': 0, 'lost': 0,
-                        'gf': 0, 'ga': 0, 'gd': 0, 'points': 0
-                    }
-                except TeamModel.DoesNotExist:
-                    continue
-            
-            for match in matches_in_group:
-                if not match.team1 or not match.team2:
-                    continue
-                t1, t2 = match.team1.id, match.team2.id
-                s1, s2 = match.score1, match.score2
-                
-                if t1 in standings:
-                    standings[t1]['played'] += 1
-                    standings[t1]['gf'] += s1
-                    standings[t1]['ga'] += s2
-                if t2 in standings:
-                    standings[t2]['played'] += 1
-                    standings[t2]['gf'] += s2
-                    standings[t2]['ga'] += s1
-                
-                if s1 > s2:
-                    if t1 in standings: standings[t1]['won'] += 1; standings[t1]['points'] += 3
-                    if t2 in standings: standings[t2]['lost'] += 1
-                elif s1 < s2:
-                    if t2 in standings: standings[t2]['won'] += 1; standings[t2]['points'] += 3
-                    if t1 in standings: standings[t1]['lost'] += 1
-                else:
-                    if t1 in standings: standings[t1]['drawn'] += 1; standings[t1]['points'] += 1
-                    if t2 in standings: standings[t2]['drawn'] += 1; standings[t2]['points'] += 1
-            
-            for tid in standings:
-                standings[tid]['gd'] = standings[tid]['gf'] - standings[tid]['ga']
-            
-            result[group] = sorted(standings.values(), key=lambda x: (x['points'], x['gd'], x['gf']), reverse=True)
+            if group:
+                result[group] = tournament.get_group_standings_internal(group)
         
         return Response(result)
 

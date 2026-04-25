@@ -66,6 +66,7 @@ const GroupStage = ({ matches, groupStandings, isAdmin, onUpdateMatch }) => {
                 {/* Mini Standings Table (Left) */}
               {gStandings.length > 0 && (
                 <div className="gs-standings">
+                  <div className="gs-section-title">Classement du groupe</div>
                   <table className="gs-table">
                     <thead>
                       <tr>
