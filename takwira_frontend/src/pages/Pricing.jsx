@@ -50,6 +50,7 @@ const Pricing = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subscribingId, setSubscribingId] = useState(null);
+  const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' or 'yearly'
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -84,122 +85,156 @@ const Pricing = () => {
         setSubscribingId(null);
       }
     } else {
-      navigate(`/payment?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}&price=${plan.price_monthly}`);
-    }
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
+      const price = billingCycle === 'yearly' ? (plan.price_monthly * 10).toFixed(0) : plan.price_monthly;
+      navigate(`/payment?planId=${plan.id}&planName=${encodeURIComponent(plan.name)}&price=${price}&cycle=${billingCycle}`);
     }
   };
 
   if (loading || authLoading) {
-    return <div className="loading-screen">Chargement des tarifs...</div>;
+    return (
+      <div className="pricing-loader">
+        <Loader className="animate-spin" size={40} />
+        <p>Préparation des meilleures offres...</p>
+      </div>
+    );
   }
 
   const getIcon = (name) => {
     switch (name.toLowerCase()) {
       case 'free':
-      case 'gratuit':
-        return <Zap size={24} />;
-      case 'pro':
-        return <Star size={24} />;
-      case 'club':
-        return <Shield size={24} />;
-      default:
-        return <CheckCircle size={24} />;
+      case 'gratuit': return <Zap size={28} />;
+      case 'pro': return <Star size={28} />;
+      case 'club': return <Shield size={28} />;
+      default: return <CheckCircle size={28} />;
     }
   };
 
-  const getFeatures = (name) => {
-    return PLAN_FEATURES[name.toLowerCase()] || [];
-  };
+  const comparisonFeatures = [
+    { label: "Recherche de terrains", free: true, pro: true, club: true },
+    { label: "Réservations mensuelles", free: "3 / mois", pro: "Illimitées", club: "Illimitées" },
+    { label: "Création de tournois", free: false, pro: true, club: true },
+    { label: "Gestion d'équipe", free: false, pro: true, club: true },
+    { label: "Paiement en ligne", free: false, pro: true, club: true },
+    { label: "Plusieurs terrains", free: false, pro: false, club: true },
+    { label: "Analytics avancés", free: false, pro: false, club: true },
+    { label: "Support client", free: "Standard", pro: "Prioritaire", club: "VIP 24/7" },
+  ];
 
   return (
     <div className="pricing-page">
-      <section className="pricing-header">
+      <section className="pricing-hero">
         <div className="container">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="pricing-hero-content"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
           >
-            <h1 className="section-title">Choisissez Votre Formule</h1>
-            <p className="section-sub">Des options flexibles pour tous les types de pratiquants et de clubs.</p>
+            <div className="pricing-badge">Tarification</div>
+            <h1 className="hero-title">Une offre pour chaque <span>Takwiriste</span></h1>
+            <p className="hero-sub">Des options flexibles pour tous les types de pratiquants et de clubs.</p>
           </motion.div>
         </div>
       </section>
 
-      <section className="pricing-list">
-        <div className="container">
-          <motion.div
-            className="pricing-grid"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
+      <div className="billing-toggle-container">
+        <div className="billing-toggle">
+          <span className={billingCycle === 'monthly' ? 'active' : ''}>Mensuel</span>
+          <button 
+            className={`toggle-btn ${billingCycle}`} 
+            onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
           >
-            {plans.map((plan) => {
+            <div className="toggle-dot"></div>
+          </button>
+          <span className={billingCycle === 'yearly' ? 'active' : ''}>Annuel</span>
+          <div className="yearly-save">2 mois offerts</div>
+        </div>
+      </div>
+
+      <section className="pricing-cards-section">
+        <div className="container">
+          <div className="pricing-cards-grid">
+            {plans.map((plan, idx) => {
               const isCurrentPlan = user?.subscription_plan === plan.id ||
                 (user?.subscription_plan_name && user.subscription_plan_name.toLowerCase() === plan.name.toLowerCase());
-              const features = getFeatures(plan.name);
+              const features = PLAN_FEATURES[plan.name.toLowerCase()] || [];
+              const isPopular = plan.name.toLowerCase() === 'pro';
+              const displayPrice = billingCycle === 'yearly' ? (plan.price_monthly * 10) : plan.price_monthly;
 
               return (
                 <motion.div
                   key={plan.id}
-                  className={`plan-card ${plan.name.toLowerCase() === 'pro' ? 'popular' : ''} ${isCurrentPlan ? 'active-plan' : ''}`}
-                  variants={itemVariants}
-                  style={{
-                    scale: isCurrentPlan ? 1.15 : 1,
-                    zIndex: isCurrentPlan ? 10 : 1
-                  }}
-                  whileHover={{
-                    scale: isCurrentPlan ? 1.2 : 1.05,
-                    transition: { duration: 0.2 }
-                  }}
+                  className={`premium-plan-card ${isPopular ? 'popular' : ''} ${isCurrentPlan ? 'current' : ''}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1, duration: 0.5 }}
                 >
-                  {plan.name.toLowerCase() === 'pro' && <div className="popular-badge">Recommandé</div>}
-                  {isCurrentPlan && <div className="active-badge">Votre Plan Actuel</div>}
-                  <div className="plan-icon">
-                    {getIcon(plan.name)}
+                  {isPopular && <div className="card-popular-badge">Recommandé</div>}
+                  {isCurrentPlan && <div className="card-current-badge">Plan Actuel</div>}
+                  
+                  <div className="card-header">
+                    <div className="card-icon">{getIcon(plan.name)}</div>
+                    <h3>{plan.name}</h3>
+                    <div className="card-price">
+                      <span className="currency">TND</span>
+                      <span className="amount">{displayPrice}</span>
+                      <span className="period">{billingCycle === 'yearly' ? '/an' : '/mois'}</span>
+                    </div>
                   </div>
-                  <h3>{plan.name}</h3>
-                  <div className="plan-price">
-                    {plan.price_monthly} <span>TND/mois</span>
-                  </div>
-                  <ul className="plan-features">
-                    {features.map((feature, index) => (
-                      <li key={index}><CheckCircle size={14} /> {feature}</li>
+
+                  <div className="card-divider"></div>
+
+                  <ul className="card-features">
+                    {features.slice(0, 6).map((f, i) => (
+                      <li key={i}><CheckCircle size={16} /> {f}</li>
                     ))}
                   </ul>
+
                   <button
-                    className={`btn-select ${isCurrentPlan ? 'btn-active' : ''}`}
+                    className={`card-cta ${isPopular ? 'primary' : 'secondary'} ${isCurrentPlan ? 'disabled' : ''}`}
                     onClick={() => handleSubscribe(plan)}
                     disabled={isCurrentPlan || subscribingId === plan.id}
                   >
                     {subscribingId === plan.id ? (
                       <Loader className="animate-spin" size={20} />
                     ) : isCurrentPlan ? (
-                      "Plan Actuel"
+                      "Votre Plan Actuel"
                     ) : (
-                      "S'abonner"
+                      "Commencer"
                     )}
                   </button>
                 </motion.div>
               );
             })}
-          </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section className="pricing-comparison">
+        <div className="container">
+          <h2 className="comparison-title">Comparez les plans</h2>
+          <div className="comparison-table-wrapper">
+            <table className="comparison-table">
+              <thead>
+                <tr>
+                  <th>Fonctionnalités</th>
+                  <th>Gratuit</th>
+                  <th>Pro</th>
+                  <th>Club</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonFeatures.map((f, i) => (
+                  <tr key={i}>
+                    <td>{f.label}</td>
+                    <td>{typeof f.free === 'boolean' ? (f.free ? <CheckCircle className="check" size={18} /> : <span className="dash">-</span>) : f.free}</td>
+                    <td>{typeof f.pro === 'boolean' ? (f.pro ? <CheckCircle className="check" size={18} /> : <span className="dash">-</span>) : f.pro}</td>
+                    <td>{typeof f.club === 'boolean' ? (f.club ? <CheckCircle className="check" size={18} /> : <span className="dash">-</span>) : f.club}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
     </div>

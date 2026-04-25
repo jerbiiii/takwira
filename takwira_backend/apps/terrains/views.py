@@ -165,6 +165,19 @@ class TerrainViewSet(viewsets.ModelViewSet):
             'occupied_dates': list(occupied.values())
         })
 
+    @action(detail=False, methods=['get'])
+    def mine(self, request):
+        """Returns only terrains owned by the current user."""
+        if not request.user.is_authenticated:
+            return Response({'detail': 'Non authentifié.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        queryset = Terrain.objects.filter(owner=request.user).annotate(
+            average_rating=Avg('reviews__rating'),
+            reviews_count=Count('reviews')
+        ).order_by('-created_at')
+        serializer = TerrainSerializer(queryset, many=True)
+        return Response(serializer.data)
+
     @action(detail=False, methods=['get'], url_path='platform-stats')
     def platform_stats(self, request):
         """

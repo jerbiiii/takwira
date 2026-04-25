@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Trophy, Calendar, MapPin, Clock, CheckCircle, XCircle,
     AlertCircle, Plus, Users, ArrowRight, Activity, Star,
-    ChevronRight, Loader, Send, CreditCard
+    ChevronRight, Loader, Send, CreditCard, TrendingUp, DollarSign, PieChart, Edit
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
@@ -36,6 +36,8 @@ const Dashboard = () => {
     const [reservations, setReservations] = useState([]);
     const [myTournaments, setMyTournaments] = useState([]);
     const [myRequests, setMyRequests] = useState([]);
+    const [myTerrains, setMyTerrains] = useState([]);
+    const [ownerStats, setOwnerStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [cancellingId, setCancellingId] = useState(null);
 
@@ -48,13 +50,24 @@ const Dashboard = () => {
                     api.get('tournaments/tournament-requests/'),
                 ]);
                 setReservations(resRes.data);
+                
                 // Filter tournaments where the user is a captain of a team
-                const myId = user?.user_id || user?.id; // Handle both token and API data
+                const myId = user?.user_id || user?.id; 
                 const joined = tourRes.data.filter(t =>
                     t.teams?.some(team => team.captain === myId)
                 );
                 setMyTournaments(joined);
                 setMyRequests(reqRes.data);
+
+                // Club features
+                if (user?.can_manage_terrain) {
+                    const [terRes, statRes] = await Promise.all([
+                        api.get('terrains/mine/'),
+                        api.get('reservations/owner_stats/')
+                    ]);
+                    setMyTerrains(terRes.data);
+                    setOwnerStats(statRes.data);
+                }
             } catch (err) {
                 console.error(err);
             } finally {
@@ -101,6 +114,10 @@ const Dashboard = () => {
         { id: 'reservations', label: 'Réservations', count: reservations.length },
         { id: 'tournaments', label: 'Mes Tournois', count: myTournaments.length },
         ...(user?.can_create_tournament ? [{ id: 'requests', label: 'Demandes créa.', count: myRequests.length }] : []),
+        ...(user?.can_manage_terrain ? [
+            { id: 'terrains', label: 'Mes Terrains', count: myTerrains.length },
+            { id: 'analytics', label: 'Analytiques', icon: <TrendingUp size={14} /> }
+        ] : []),
     ];
 
     if (loading) {
@@ -335,7 +352,7 @@ const Dashboard = () => {
                                                         {r.admin_notes && (
                                                             <div className="admin-note">
                                                                 <strong>Note admin :</strong> {r.admin_notes}
-                                                            </div>
+                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
@@ -348,6 +365,86 @@ const Dashboard = () => {
                                         ))}
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {/* TERRAINS TAB (Club Only) */}
+                        {activeTab === 'terrains' && (
+                            <div className="history-section">
+                                <div className="requests-header-row">
+                                    <Link to="/terrains" className="dash-btn-add">
+                                        <Plus size={16} /> Ajouter un terrain
+                                    </Link>
+                                </div>
+                                {myTerrains.length === 0 ? (
+                                    <EmptyState
+                                        icon={<MapPin size={40} />}
+                                        title="Aucun terrain"
+                                        subtitle="Commencez à gérer vos propres terrains"
+                                        cta={{ label: 'Voir la liste des terrains', href: '/terrains' }}
+                                    />
+                                ) : (
+                                    <div className="history-list">
+                                        {myTerrains.map((t, i) => (
+                                            <motion.div key={t.id} className="history-card terrain-manage-card">
+                                                <div className="hcard-left">
+                                                    <div className="hcard-icon terrain-icon"><MapPin size={18} /></div>
+                                                    <div className="hcard-info">
+                                                        <h4>{t.name}</h4>
+                                                        <div className="hcard-meta">
+                                                            <span>{t.city}, {t.address}</span>
+                                                            <span>{t.price_per_hour} TND/heure</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="hcard-right">
+                                                    <Link to="/terrains" className="btn-edit-small"><Edit size={14} /> Gérer</Link>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ANALYTICS TAB (Club Only) */}
+                        {activeTab === 'analytics' && ownerStats && (
+                            <div className="analytics-section">
+                                <div className="analytics-grid">
+                                    <div className="analytics-card main">
+                                        <div className="ana-header">
+                                            <div className="ana-icon"><DollarSign size={24} /></div>
+                                            <div>
+                                                <div className="ana-label">Revenu Total</div>
+                                                <div className="ana-val">{ownerStats.total_revenue} TND</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="analytics-card">
+                                        <div className="ana-label">Réservations Totales</div>
+                                        <div className="ana-val">{ownerStats.total_bookings}</div>
+                                    </div>
+                                    <div className="analytics-card highlight">
+                                        <div className="ana-label">Revenu du Mois</div>
+                                        <div className="ana-val">{ownerStats.monthly_revenue} TND</div>
+                                        <div className="ana-sub">{ownerStats.monthly_bookings} réservations</div>
+                                    </div>
+                                </div>
+                                <div className="analytics-visual">
+                                    <div className="visual-header">
+                                        <PieChart size={18} />
+                                        <h3>Performance de vos terrains</h3>
+                                    </div>
+                                    <div className="visual-placeholder">
+                                        <div className="v-bar-container">
+                                            <div className="v-label">Taux d'occupation (Mois)</div>
+                                            <div className="v-progress-bg">
+                                                <div className="v-progress-fill" style={{ width: `${Math.min(100, (ownerStats.monthly_bookings / 30) * 100)}%` }}></div>
+                                            </div>
+                                            <div className="v-hint">Basé sur une capacité théorique de 1 match/jour</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </motion.div>

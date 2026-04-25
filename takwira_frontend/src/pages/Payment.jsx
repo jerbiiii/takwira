@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CreditCard, ShieldCheck, Lock, CheckCircle, 
-  ArrowLeft, Loader, Info
+  ArrowLeft, Loader, Info, Wifi
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +20,7 @@ const Payment = () => {
   const planId = query.get('planId');
   const planName = query.get('planName');
   const price = query.get('price');
+  const cycle = query.get('cycle') || 'monthly';
 
   const currentYearLong = new Date().getFullYear();
   const years = Array.from({ length: 11 }, (_, i) => (currentYearLong + i).toString());
@@ -211,7 +212,8 @@ const Payment = () => {
 
               <div className="pay-plan-details">
                 <div className="pay-plan-name">Plan {planName}</div>
-                <div className="pay-plan-price">{price} <span>TND/mois</span></div>
+                <div className="pay-plan-cycle">{cycle === 'yearly' ? 'Abonnement Annuel' : 'Abonnement Mensuel'}</div>
+                <div className="pay-plan-price">{price} <span>TND{cycle === 'yearly' ? '/an' : '/mois'}</span></div>
               </div>
 
             <div className="payment-trust">
@@ -256,38 +258,48 @@ const Payment = () => {
                   >
                     {/* Front Side */}
                     <div className="card-face card-front">
-                      <div className="card-inner-design">
-                        <div className="card-top">
-                          <div className="card-chip">
-                            <div className="chip-line"></div>
-                            <div className="chip-line"></div>
-                            <div className="chip-line"></div>
-                            <div className="chip-line"></div>
-                          </div>
+                      <div className="card-top">
+                        <div className="card-chip-group">
+                          <div className="card-chip"></div>
                           <div className="contactless-icon">
-                            <div className="wave"></div>
-                            <div className="wave"></div>
-                            <div className="wave"></div>
+                            <Wifi size={22} color="rgba(255,255,255,0.7)" />
                           </div>
                         </div>
-                        
-                        <div className="card-number-display">
-                          {formData.cardNumber || '•••• •••• •••• ••••'}
+                        <div className="card-brand-display">
+                          {renderBrandLogo(formData.cardBrand, 'large')}
                         </div>
-                        
-                        <div className="card-bottom">
-                          <div className="card-info-group">
-                            <div className="card-holder-display">
-                              <label>Titulaire</label>
-                              <span>{formData.cardHolder || 'NOM SUR LA CARTE'}</span>
+                      </div>
+                      
+                      <div className="card-number-display">
+                        {formData.cardNumber ? (
+                          formData.cardNumber.split(' ').map((group, i) => (
+                            <div key={i} className="number-group">
+                              <span>{group}</span>
+                              {i === 0 && <small className="small-number">1234</small>}
                             </div>
+                          ))
+                        ) : (
+                          <>
+                            <div className="number-group"><span>••••</span><small className="small-number">1234</small></div>
+                            <div className="number-group"><span>••••</span></div>
+                            <div className="number-group"><span>••••</span></div>
+                            <div className="number-group"><span>••••</span></div>
+                          </>
+                        )}
+                      </div>
+                      
+                      <div className="card-bottom">
+                        <div className="card-info-group">
+                          <div className="card-holder-display">
+                            <label>Cardholder Name</label>
+                            <span>{formData.cardHolder || 'LOREM IPSUM'}</span>
+                          </div>
+                          
+                          <div className="card-expiry-display-group">
+                            <label className="expiry-label">VALID THRU</label>
                             <div className={`card-expiry-display ${isExpired() ? 'invalid-date' : ''}`}>
-                              <label>Expire</label>
                               <span>{formData.expiryMonth && formData.expiryYear ? `${formData.expiryMonth}/${formData.expiryYear.substring(2)}` : 'MM/YY'}</span>
                             </div>
-                          </div>
-                          <div className="card-brand-display">
-                            {renderBrandLogo(formData.cardBrand, 'large')}
                           </div>
                         </div>
                       </div>

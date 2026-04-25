@@ -1,151 +1,85 @@
-# ⚽ Takwira — Plateforme de Réservation de Terrains de Football
+# Takwira - Plateforme de Gestion de Football ⚽
 
-**Takwira** est une application web full-stack permettant aux joueurs de football en Tunisie de rechercher, réserver des terrains de football et de participer à des tournois — le tout via une interface moderne, animée et responsive.
+Takwira est une application web premium conçue pour simplifier la réservation de terrains de football, l'organisation de tournois et la gestion de clubs. Elle offre une expérience fluide tant pour les joueurs que pour les propriétaires de terrains.
 
----
+## 🚀 Fonctionnalités Principales
 
-## 🎯 Fonctionnalités principales
+### Pour les Joueurs
+- **Réservation en ligne** : Interface intuitive pour réserver des terrains avec filtres par ville et surface.
+- **Tournois** : Participation à des tournois (Knockout ou Ligue) avec suivi des scores en temps réel.
+- **Gestion d'équipe** : Création et gestion d'équipes pour les compétitions.
+- **Historique** : Accès aux statistiques personnelles et historique des matchs.
 
-### Pour les joueurs
-- **Recherche de terrains** — Parcourez les terrains disponibles avec filtrage par ville/gouvernorat et carte interactive (Leaflet).
-- **Réservation en ligne** — Consultez les créneaux disponibles via un calendrier dynamique et réservez instantanément.
-- **Tournois** — Inscrivez-vous à des tournois publics ou demandez la création d'un tournoi personnalisé.
-- **Dashboard joueur** — Suivez vos réservations, historique de matchs et inscriptions aux tournois.
-- **Abonnements Premium** — Trois formules (Gratuit, Pro à 29 TND/mois, Club à 79 TND/mois) avec paiement en ligne sécurisé.
+### Pour les Propriétaires (Plan Club)
+- **Gestion de Terrains** : Ajout et modification de terrains.
+- **Tableau de Bord Analytique** : Visualisation des revenus et taux d'occupation des terrains.
+- **Validation des Réservations** : Contrôle total sur le planning des terrains.
 
-### Pour les administrateurs
-- **Gestion des terrains** — Créer, modifier et supprimer des terrains depuis le panneau admin.
-- **Gestion des tournois** — Créer des tournois, gérer les inscriptions et les résultats.
-- **Gestion des réservations** — Valider, annuler et suivre toutes les réservations de la plateforme.
-- **Demandes de tournois** — Examiner et approuver les demandes de création de tournois soumises par les joueurs.
-- **Logs d'activité** — Consulter l'historique des actions effectuées sur la plateforme avec filtrage avancé.
+### Pour l'Administrateur
+- **Gestion des Tournois** : Création de compétitions complexes (Poules + Phases éliminatoires).
+- **Modération** : Validation des demandes de création de tournois.
+- **Statistiques Globales** : Vue d'ensemble de l'activité sur la plateforme.
 
----
+## 🛠️ Stack Technique
 
-## 🛠 Stack technique
+- **Frontend** : React.js, Vite, Framer Motion (animations), Lucide React (icones).
+- **Backend** : Django REST Framework (Python 3.x).
+- **Base de Données** : MySQL / MariaDB.
+- **Paiement** : Simulation de paiement sécurisé avec design de carte bancaire réaliste.
 
-| Couche | Technologies |
-|--------|-------------|
-| **Frontend** | React 19, Vite 8, React Router 7, Framer Motion, Axios, Lucide Icons, Leaflet / React-Leaflet |
-| **Backend** | Django (Python), Django REST Framework |
-| **Base de données** | SQLite (développement) — compatible PostgreSQL en production |
-| **Styling** | Vanilla CSS avec design premium (glassmorphism, gradients, micro-animations, dark mode) |
-| **Authentification** | JWT (JSON Web Tokens) via `jwt-decode` |
+## 📥 Installation
 
----
+### Backend
+1. Naviguez vers le dossier backend :
+   ```bash
+   cd takwira_backend
+   ```
+2. Installez les dépendances :
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Configurez votre base de données dans `takwira/settings.py` ou via un fichier `.env`.
+4. Lancez les migrations :
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+5. Populez la base de données avec des données de test massives :
+   ```bash
+   python populate_all.py
+   ```
+6. Lancez le serveur :
+   ```bash
+   python manage.py runserver
+   ```
 
-## 📁 Structure du projet
+### Frontend
+1. Naviguez vers le dossier frontend :
+   ```bash
+   cd takwira_frontend
+   ```
+2. Installez les dépendances :
+   ```bash
+   npm install
+   ```
+3. Lancez l'application :
+   ```bash
+   npm run dev
+   ```
 
-```
-Marketing App/
-├── takwira_backend/          # API Django
-│   ├── apps/
-│   │   ├── users/            # Authentification et gestion des utilisateurs
-│   │   ├── terrains/         # CRUD terrains + statistiques plateforme
-│   │   ├── reservations/     # Système de réservation
-│   │   ├── tournaments/      # Gestion des tournois
-│   │   ├── subscriptions/    # Plans d'abonnement et paiements
-│   │   ├── logs/             # Journalisation des actions admin
-│   │   └── utils/            # Utilitaires partagés
-│   ├── takwira/              # Configuration Django (settings, urls, wsgi)
-│   └── manage.py
-│
-├── takwira_frontend/         # Application React
-│   └── src/
-│       ├── pages/            # Pages de l'application
-│       │   ├── Home.jsx          # Page d'accueil avec hero, stats, pricing
-│       │   ├── Terrains.jsx      # Liste et carte des terrains
-│       │   ├── Tournaments.jsx   # Liste des tournois
-│       │   ├── Dashboard.jsx     # Espace joueur
-│       │   ├── AdminDashboard.jsx # Panneau d'administration
-│       │   ├── Login.jsx         # Connexion
-│       │   ├── Register.jsx      # Inscription
-│       │   ├── Pricing.jsx       # Page des tarifs
-│       │   ├── Payment.jsx       # Paiement avec carte 3D interactive
-│       │   ├── RequestTournament.jsx # Demande de tournoi
-│       │   ├── About.jsx         # À propos
-│       │   ├── Contact.jsx       # Contact
-│       │   └── Privacy.jsx       # Politique de confidentialité
-│       ├── components/       # Composants réutilisables
-│       │   ├── Navbar.jsx        # Barre de navigation
-│       │   ├── Footer.jsx        # Pied de page
-│       │   ├── BookingModal.jsx   # Modal de réservation
-│       │   ├── DatePicker.jsx     # Sélecteur de date custom
-│       │   ├── TimePicker.jsx     # Sélecteur d'heure custom
-│       │   ├── DateRangePicker.jsx # Sélecteur de plage de dates
-│       │   ├── LoginAnimation.jsx # Animation d'authentification
-│       │   └── ...
-│       ├── context/          # Contextes React (AuthContext)
-│       └── api/              # Configuration Axios
-│
-├── requirements.txt          # Dépendances Python
-└── README.md
-```
+## 🔑 Identifiants de Test
 
----
+| Rôle | Email | Mot de passe |
+| :--- | :--- | :--- |
+| **Admin** | `admin@takwira.tn` | `admin123` |
+| **Club Owner** | `owner0@takwira.tn` | `owner123` |
+| **Joueur Pro** | `ahmed0@takwira.tn` | `player123` |
 
-## 🚀 Installation et lancement
+## 💳 Plans d'Abonnement
 
-### Prérequis
-
-- **Node.js** ≥ 20 et **npm**
-- **Python** ≥ 3.11 et **pip**
-- **Git**
-
-### Backend (Django)
-
-```bash
-# Cloner le repo
-git clone https://github.com/jerbiiii/takwira.git
-cd "Marketing App"
-
-# Créer un environnement virtuel
-python -m venv venv
-venv\Scripts\activate          # Windows
-# source venv/bin/activate     # macOS/Linux
-
-# Installer les dépendances
-pip install -r requirements.txt
-
-# Appliquer les migrations et démarrer le serveur
-cd takwira_backend
-python manage.py migrate
-python manage.py runserver
-```
-
-Le serveur API sera disponible sur `http://127.0.0.1:8000/`.
-
-### Frontend (React + Vite)
-
-```bash
-cd takwira_frontend
-npm install
-npm run dev
-```
-
-L'application sera accessible sur `http://localhost:5173/` et les appels API seront automatiquement redirigés vers le backend Django.
+- **Free** : 3 réservations par mois.
+- **Pro** : Réservations illimitées + Création de tournois.
+- **Club** : Toutes les fonctions Pro + Gestion de terrains + Analytiques avancées.
 
 ---
-
-## 🎨 Design et UX
-
-L'interface de Takwira met l'accent sur une expérience visuelle premium :
-
-- **Glassmorphism** — Effets de verre dépoli sur les cartes et modals.
-- **Animations Framer Motion** — Transitions de pages fluides, apparitions au scroll, animations d'authentification interactives (silhouette de joueur animée sur la page login).
-- **Dark mode** — Thème sombre cohérent avec palette de verts (#00E676, #1B5E20).
-- **Carte interactive** — Visualisation des terrains sur carte Leaflet avec géolocalisation.
-- **Responsive** — Interface adaptée mobile, tablette et desktop.
-- **Carte de paiement 3D** — Animation 3D interactive de carte bancaire lors du paiement.
-
----
-
-## 📝 Licence
-
-Ce projet est sous licence **MIT** — voir le fichier `LICENSE` pour plus de détails.
-
----
-
-## 📬 Contact
-
-Pour toute question ou suggestion, contactez l'équipe Takwira à `contact@takwira.io`.
+*Développé avec ❤️ par l'équipe Takwira.*

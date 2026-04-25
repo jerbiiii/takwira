@@ -81,3 +81,30 @@ class ReservationViewSet(viewsets.ModelViewSet):
         reservation.status = 'cancelled'
         reservation.save()
         return Response({'status': 'Réservation annulée'}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def owner_stats(self, request):
+        """Returns statistics for terrain owners (revenue, bookings)."""
+        user = request.user
+        if not user.subscription_plan or not user.subscription_plan.can_manage_terrain:
+            return Response({'detail': 'Réservé aux propriétaires de terrains.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Get all reservations for terrains owned by this user
+        owned_terrains = user.terrains.all()
+        reservations = Reservation.objects.filter(terrain__in=owned_terrains, status='confirmed')
+        
+        total_revenue = sum(r.total_price for r in reservations)
+        total_bookings = reservations.count()
+        
+        # Monthly revenue
+        from django.utils import timezone
+        now = timezone.now()
+        monthly_reservations = reservations.filter(date__year=now.year, date__month=now.month)
+        monthly_revenue = sum(r.total_price for r in monthly_reservations)
+        
+        return Response({
+            'total_revenue': total_revenue,
+            'total_bookings': total_bookings,
+            'monthly_revenue': monthly_revenue,
+            'monthly_bookings': monthly_reservations.count(),
+        })
