@@ -4,7 +4,7 @@ import {
   Trophy, Calendar, MapPin, Users, CheckCircle, XCircle,
   AlertCircle, Activity, Clock, Loader, Eye, RefreshCw,
   TrendingUp, Shield, ChevronDown, ChevronUp, Send, Zap, MessageSquare, Edit2, Trash2,
-  FileText, Filter, Trash, Info, AlertTriangle, Ban, CheckCircle2, User
+  FileText, Filter, Trash, Info, AlertTriangle, Ban, CheckCircle2, User, Archive
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../api/axios';
@@ -28,12 +28,56 @@ const StatusBadge = ({ status }) => {
   return <span className={`adm-badge ${s.cls}`}>{s.icon} {s.label}</span>;
 };
 
+const MatchRow = ({ match, onUpdate, isUpdating }) => {
+  const [s1, setS1] = useState(match.score1);
+  const [s2, setS2] = useState(match.score2);
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'finished': return <span className="adm-match-status done"><CheckCircle2 size={12} /> Terminé</span>;
+      case 'ongoing': return <span className="adm-match-status live"><Activity size={12} /> En cours</span>;
+      case 'scheduled': return <span className="adm-match-status next"><Clock size={12} /> À venir</span>;
+      default: return <span className="adm-match-status next">{status}</span>;
+    }
+  };
+
+  return (
+    <div className={`adm-match-manage-row status-${match.status}`}>
+      <div className="adm-match-phase">
+        <span className="adm-match-phase-badge">{match.phase}</span>
+        <span className="adm-match-group">{match.group_name || '-'}</span>
+      </div>
+      <div className="adm-match-team1">{match.team1_name || 'À déterminer'}</div>
+      <div className="adm-match-inputs">
+        <input type="number" value={s1} onChange={e => setS1(parseInt(e.target.value) || 0)} min="0" />
+        <span className="adm-match-vs">VS</span>
+        <input type="number" value={s2} onChange={e => setS2(parseInt(e.target.value) || 0)} min="0" />
+      </div>
+      <div className="adm-match-team2">{match.team2_name || 'À déterminer'}</div>
+      <div className="adm-match-status-col">
+        {getStatusBadge(match.status)}
+      </div>
+      <div className="adm-match-action">
+        <button 
+          className="adm-btn-save-modern" 
+          onClick={() => onUpdate(match.id, s1, s2)}
+          disabled={isUpdating}
+        >
+          {isUpdating ? <Loader className="adm-spin" size={14} /> : <CheckCircle size={14} />} 
+          <span>Sauvegarder</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [reservations, setReservations] = useState([]);
   const [tournaments, setTournaments] = useState([]);
+  const [archivedTournaments, setArchivedTournaments] = useState([]);
   const [requests, setRequests] = useState([]);
   const [logs, setLogs] = useState([]);
   const [logsCount, setLogsCount] = useState(0);
@@ -45,6 +89,10 @@ const AdminDashboard = () => {
   const [noteInputs, setNoteInputs] = useState({});
   const [isTourModalOpen, setIsTourModalOpen] = useState(false);
   const [editingTournament, setEditingTournament] = useState(null);
+  const [managingMatchesTourn, setManagingMatchesTourn] = useState(null);
+  const [matches, setMatches] = useState([]);
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [updatingMatchId, setUpdatingMatchId] = useState(null);
 
   useEffect(() => {
     if (user?.role !== 'admin') { navigate('/'); return; }
@@ -54,19 +102,25 @@ const AdminDashboard = () => {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [resRes, tourRes, reqRes] = await Promise.all([
+      const [resRes, tourRes, reqRes, archRes] = await Promise.all([
         api.get('reservations/'),
-        api.get('tournaments/'),
+        api.get('tournaments/?include_finished=true'),
         api.get('tournaments/tournament-requests/'),
+        api.get('tournaments/archived/'),
       ]);
       setReservations(resRes.data);
       setTournaments(tourRes.data);
       setRequests(reqRes.data);
+      setArchivedTournaments(archRes.data);
     } catch (err) {
       toast.error('Erreur lors du chargement.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleConsultArchive = (id) => {
+    navigate(`/tournaments/${id}/live`);
   };
 
   const fetchLogs = async (page = 1) => {
@@ -168,6 +222,38 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleManageMatches = async (tournament) => {
+    setManagingMatchesTourn(tournament);
+    setMatchLoading(true);
+    try {
+      const res = await api.get(`tournaments/${tournament.id}/`);
+      setMatches(res.data.matches || []);
+    } catch (err) {
+      toast.error('Erreur lors du chargement des matchs.');
+    } finally {
+      setMatchLoading(false);
+    }
+  };
+
+  const handleUpdateScore = async (matchId, score1, score2) => {
+    setUpdatingMatchId(matchId);
+    try {
+      await api.patch(`tournaments/matches/${matchId}/`, {
+        score1,
+        score2,
+        status: 'finished'
+      });
+      toast.success('Score mis à jour !');
+      // Refresh matches
+      const res = await api.get(`tournaments/${managingMatchesTourn.id}/`);
+      setMatches(res.data.matches || []);
+    } catch (err) {
+      toast.error('Erreur lors de la mise à jour du score.');
+    } finally {
+      setUpdatingMatchId(null);
+    }
+  };
+
   const pendingRequests = requests.filter(r => r.status === 'pending');
 
   const stats = [
@@ -197,6 +283,7 @@ const AdminDashboard = () => {
     { id: 'overview', label: 'Vue d\'ensemble', icon: <Activity size={15} /> },
     { id: 'reservations', label: 'Réservations', icon: <Calendar size={15} />, count: reservations.length },
     { id: 'tournaments', label: 'Tournois', icon: <Trophy size={15} />, count: tournaments.length },
+    { id: 'archives', label: 'Archivés', icon: <Archive size={15} />, count: archivedTournaments.length },
     { id: 'requests', label: 'Demandes', icon: <Send size={15} />, count: pendingRequests.length, alert: pendingRequests.length > 0 },
     { id: 'logs', label: 'Logs', icon: <FileText size={15} /> },
   ];
@@ -432,7 +519,7 @@ const AdminDashboard = () => {
             )}
 
             {/* TOURNAMENTS */}
-            {activeTab === 'tournaments' && (
+            {activeTab === 'tournaments' && !managingMatchesTourn && (
               <div className="adm-list-section">
                 <div className="adm-list-header">
                   <h3>Tous les tournois <span>({tournaments.length})</span></h3>
@@ -441,13 +528,13 @@ const AdminDashboard = () => {
                   <div className="adm-empty">Aucun tournoi créé</div>
                 ) : (
                   <div className="adm-table">
-                    <div className="adm-table-head">
-                      <span>Nom</span><span>Organisateur</span><span>Terrain</span><span>Dates</span><span>Équipes</span><span>Statut</span><span>Actions</span>
+                    <div className="adm-table-head adm-tour-head">
+                      <span>Nom</span><span>Organisateur</span><span>Terrain</span><span>Dates</span><span>Équipes</span><span>Statut</span>
                     </div>
                     {tournaments.map((t, i) => (
                       <motion.div
                         key={t.id}
-                        className="adm-table-row"
+                        className="adm-table-row adm-tour-row"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.04 }}
@@ -458,15 +545,85 @@ const AdminDashboard = () => {
                         <span>{t.start_date} → {t.end_date}</span>
                         <span><Users size={12} /> {t.teams?.length || 0}/{t.max_teams}</span>
                         <span><StatusBadge status={t.status} /></span>
-                        <span className="adm-actions-cell">
-                          <button className="admin-btn edit" onClick={() => handleEditTournament(t)} title="Modifier"><Edit2 size={16} /></button>
-                          <button className="admin-btn delete" onClick={() => handleDeleteTournament(t.id)} title="Supprimer"><Trash2 size={16} /></button>
-                        </span>
                       </motion.div>
                     ))}
                   </div>
                 )}
               </div>
+            )}
+
+            {/* TOURNOIS ARCHIVÉS */}
+            {activeTab === 'archives' && !managingMatchesTourn && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="adm-panel full-width">
+                <div className="adm-panel-header">
+                  <div className="adm-panel-title">
+                    <Archive size={20} />
+                    <h2>Tournois Archivés (Terminés)</h2>
+                  </div>
+                </div>
+                <div className="adm-table-container">
+                  <div className="adm-table-head adm-archived-head">
+                    <span>Nom</span>
+                    <span>Terrain</span>
+                    <span>Dates</span>
+                    <span>Équipes</span>
+                    <span>Statut</span>
+                  </div>
+                  {archivedTournaments.length === 0 ? (
+                    <div className="adm-empty-state">Aucun tournoi archivé.</div>
+                  ) : (
+                    archivedTournaments.map(t => (
+                      <div key={t.id} className="adm-table-row adm-archived-row">
+                        <span className="adm-cell-name">{t.name}</span>
+                        <span>{t.terrain_name}</span>
+                        <span className="adm-cell-date">{new Date(t.start_date).toLocaleDateString()}</span>
+                        <span>{t.teams?.length || 0} / {t.max_teams}</span>
+                        <StatusBadge status={t.status} />
+                        <span className="adm-actions-cell">
+                          <button className="admin-btn view" onClick={() => handleConsultArchive(t.id)} title="Consulter"><Eye size={16} /></button>
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* GESTION DES MATCHS (VIEW) */}
+            {managingMatchesTourn && (
+              <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="adm-panel full-width">
+                <div className="adm-panel-header">
+                  <div className="adm-panel-title">
+                    <Activity size={20} />
+                    <h2>Gestion des Matchs : {managingMatchesTourn.name}</h2>
+                  </div>
+                  <button className="adm-btn-secondary" onClick={() => setManagingMatchesTourn(null)}>
+                    <ChevronDown size={16} style={{ transform: 'rotate(90deg)' }} /> Retour
+                  </button>
+                </div>
+
+                {matchLoading ? (
+                  <div className="adm-loading-state"><Loader className="adm-spin" /> Chargement des matchs...</div>
+                ) : (
+                  <div className="adm-matches-manager">
+                    <div className="adm-match-grid-header">
+                      <span>Phase / Groupe</span>
+                      <span>Équipe 1</span>
+                      <span className="adm-text-center">Scores</span>
+                      <span className="adm-text-right">Équipe 2</span>
+                      <span className="adm-text-center">Statut</span>
+                      <span className="adm-text-right">Action</span>
+                    </div>
+                    {matches.length === 0 ? (
+                      <div className="adm-empty-state">Aucun match généré pour ce tournoi.</div>
+                    ) : (
+                      matches.map(m => (
+                        <MatchRow key={m.id} match={m} onUpdate={handleUpdateScore} isUpdating={updatingMatchId === m.id} />
+                      ))
+                    )}
+                  </div>
+                )}
+              </motion.div>
             )}
 
             {/* REQUESTS */}

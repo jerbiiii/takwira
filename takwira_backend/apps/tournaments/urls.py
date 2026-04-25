@@ -1,10 +1,11 @@
 from rest_framework.routers import DefaultRouter
-from .views import TournamentViewSet, TournamentRequestViewSet, JoinRequestViewSet
+from .views import TournamentViewSet, TournamentRequestViewSet, JoinRequestViewSet, MatchViewSet
 from django.urls import path, include
 
 router = DefaultRouter()
 router.register(r'tournament-requests', TournamentRequestViewSet, basename='tournament-request')
 router.register(r'join-requests', JoinRequestViewSet, basename='join-request')
+router.register(r'matches', MatchViewSet, basename='match')
 router.register(r'', TournamentViewSet, basename='tournament')
 
 urlpatterns = [

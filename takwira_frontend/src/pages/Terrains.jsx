@@ -20,6 +20,13 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+const TUNISIAN_GOVERNORATES = [
+  "Ariana", "Béja", "Ben Arous", "Bizerte", "Gabès", "Gafsa", "Jendouba", 
+  "Kairouan", "Kasserine", "Kébili", "Kef", "Mahdia", "Manouba", "Médenine", 
+  "Monastir", "Nabeul", "Sfax", "Sidi Bouzid", "Siliana", "Sousse", 
+  "Tataouine", "Tozeur", "Tunis", "Zaghouan"
+];
+
 // Helper component to center map
 const ChangeView = ({ center, zoom }) => {
   const map = useMap();
@@ -37,14 +44,29 @@ const Terrains = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [isMapVisible, setIsMapVisible] = useState(true);
   const [reviewsTerrain, setReviewsTerrain] = useState(null);
+  const [selectedGov, setSelectedGov] = useState('');
   const { user } = useAuth();
 
-  const fetchTerrains = async (lat, lng) => {
+  const fetchTerrains = async (lat, lng, city = selectedGov) => {
     try {
       let url = 'terrains/';
+      const params = new URLSearchParams();
+      
       if (lat && lng) {
-        url += `?lat=${lat}&lng=${lng}&dist=30`; // 30km radius
+        params.append('lat', lat);
+        params.append('lng', lng);
+        params.append('dist', '30');
       }
+      
+      if (city) {
+        params.append('city', city);
+      }
+      
+      const queryString = params.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+      
       const res = await api.get(url);
       setTerrains(res.data);
     } catch (err) {
@@ -158,6 +180,23 @@ const Terrains = () => {
             <button className="btn-control highlight" onClick={getGeolocation}>
               <Crosshair size={18} /> Me localiser
             </button>
+            
+            <div className="gov-filter-wrapper">
+              <select 
+                className="btn-control gov-filter" 
+                value={selectedGov} 
+                onChange={(e) => {
+                  setSelectedGov(e.target.value);
+                  fetchTerrains(userLocation?.lat, userLocation?.lng, e.target.value);
+                }}
+              >
+                <option value="">Tous les gouvernorats</option>
+                {TUNISIAN_GOVERNORATES.map(gov => (
+                  <option key={gov} value={gov}>{gov}</option>
+                ))}
+              </select>
+            </div>
+
             {user && (user.role === 'admin' || user.can_manage_terrain) && (
               <motion.button 
                 className="btn-add-terrain" 

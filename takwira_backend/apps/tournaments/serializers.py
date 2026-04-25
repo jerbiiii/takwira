@@ -1,9 +1,17 @@
 from rest_framework import serializers
-from .models import Tournament, Team, TournamentRequest, JoinRequest
+from .models import Tournament, Team, TournamentRequest, JoinRequest, Match
 
 class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
+        fields = '__all__'
+
+class MatchSerializer(serializers.ModelSerializer):
+    team1_name = serializers.CharField(source='team1.name', read_only=True, allow_null=True)
+    team2_name = serializers.CharField(source='team2.name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = Match
         fields = '__all__'
 
 class TournamentSerializer(serializers.ModelSerializer):
@@ -11,16 +19,17 @@ class TournamentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tournament
-        fields = ('id', 'name', 'organizer', 'terrain', 'start_date', 'end_date', 'max_teams', 'entry_fee', 'status', 'teams', 'created_at')
+        fields = ('id', 'name', 'organizer', 'terrain', 'start_date', 'end_date', 'max_teams', 'entry_fee', 'status', 'tournament_type', 'teams', 'created_at')
         read_only_fields = ('id', 'organizer', 'created_at', 'teams')
 
 class TournamentDetailSerializer(TournamentSerializer):
     teams = TeamSerializer(many=True, read_only=True)
+    matches = MatchSerializer(many=True, read_only=True)
     organizer_name = serializers.CharField(source='organizer.username', read_only=True)
     terrain_name = serializers.CharField(source='terrain.name', read_only=True)
 
     class Meta(TournamentSerializer.Meta):
-        fields = TournamentSerializer.Meta.fields + ('organizer_name', 'terrain_name', 'teams')
+        fields = TournamentSerializer.Meta.fields + ('organizer_name', 'terrain_name', 'teams', 'matches')
 
 class TournamentRequestSerializer(serializers.ModelSerializer):
     creator_name = serializers.CharField(source='creator.username', read_only=True)

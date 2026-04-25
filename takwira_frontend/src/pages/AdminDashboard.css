@@ -986,6 +986,36 @@
   letter-spacing: 2px;
 }
 
+/* --- ARCHIVED TOURNAMENTS --- */
+.adm-archived-head {
+  background: linear-gradient(135deg, #2c2417 0%, #3d3222 100%) !important;
+}
+
+.adm-archived-row {
+  background: #fefcf8;
+  opacity: 0.85;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.adm-archived-row:hover {
+  opacity: 1;
+  background: #fdf6e9 !important;
+}
+
+.adm-badge.archived {
+  background: linear-gradient(135deg, #f5ecd7, #efe3c8);
+  color: #8b6914;
+  border: 1px solid rgba(139, 105, 20, 0.2);
+}
+
+.adm-tour-head, .adm-tour-row {
+  grid-template-columns: 1.5fr 1fr 0.8fr 1fr 0.7fr 0.8fr;
+}
+
+.adm-archived-head, .adm-archived-row {
+  grid-template-columns: 1.5fr 1fr 1fr 0.7fr 0.8fr;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .adm-stats {
@@ -1029,3 +1059,177 @@
     font-size: 22px;
   }
 }
+/* Match Management */
+.adm-matches-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.adm-match-grid-header {
+  display: grid;
+  grid-template-columns: 140px 1fr 120px 1fr 110px 140px;
+  gap: 1rem;
+  padding: 0.75rem 1.4rem;
+  background: #112818;
+  border-radius: 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.adm-match-manage-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 120px 1fr 110px 140px;
+  gap: 1rem;
+  padding: 0.8rem 1.4rem;
+  background: #fff;
+  border: 1px solid #eef2ee;
+  border-radius: 12px;
+  align-items: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 0.4rem;
+}
+
+.adm-match-manage-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border-color: var(--green);
+}
+
+.adm-match-manage-row.status-ongoing {
+  background: #fffdf8;
+  border-left: 4px solid #f39c12;
+}
+
+.adm-match-manage-row.status-finished {
+  background: #f8faf8;
+  opacity: 0.85;
+}
+
+.adm-match-manage-row.status-finished:hover {
+  opacity: 1;
+}
+
+.adm-match-phase {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-match-phase-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.adm-match-group {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.adm-match-team1, .adm-match-team2 {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.adm-match-team2 {
+  text-align: right;
+}
+
+.adm-match-inputs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.adm-match-inputs input {
+  width: 42px;
+  height: 38px;
+  background: #f4f7f4;
+  border: 2px solid #e0e6e0;
+  border-radius: 8px;
+  color: var(--text);
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.adm-match-inputs input:focus {
+  border-color: var(--green);
+  background: rgba(46, 139, 74, 0.1);
+}
+
+.adm-match-vs {
+  color: #bdc3c7;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.adm-btn-save-modern {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #2e8b4a;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.adm-btn-save-modern:hover:not(:disabled) {
+  background: #236938;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(46, 139, 74, 0.2);
+}
+
+.adm-btn-save-modern:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.adm-match-status-col {
+  display: flex;
+  justify-content: center;
+}
+
+.adm-match-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.adm-match-status.done { background: #e8f5ee; color: #1e7e3a; }
+.adm-match-status.live { background: #fff3e0; color: #e67e22; animation: adm-pulse 2s infinite; }
+.adm-match-status.next { background: #f5f7f9; color: #7f8c8d; }
+
+@keyframes adm-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.adm-text-center { text-align: center; }
+.adm-text-right { text-align: right; }
+

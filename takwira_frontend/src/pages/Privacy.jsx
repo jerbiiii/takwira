@@ -133,9 +133,20 @@ const Privacy = () => (
                 <h3>{title}</h3>
               </div>
               <ul className="sp-privacy-list">
-                {content.map((item, j) => (
-                  <li key={j} dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
-                ))}
+                {content.map((item, j) => {
+                  const parts = item.split(/(\*\*.*?\*\*)/g);
+                  return (
+                    <li key={j}>
+                      {parts.map((part, k) => (
+                        part.startsWith('**') && part.endsWith('**') ? (
+                          <strong key={k}>{part.slice(2, -2)}</strong>
+                        ) : (
+                          part
+                        )
+                      ))}
+                    </li>
+                  );
+                })}
               </ul>
             </motion.div>
           ))}

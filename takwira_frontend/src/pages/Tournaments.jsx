@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Calendar, Users, ArrowRight, Plus, Edit2, Trash2, CheckCircle, MapPin, Send } from 'lucide-react';
+import { Trophy, Calendar, Users, ArrowRight, Plus, Edit2, Trash2, CheckCircle, MapPin, Send, Archive } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import CreateTournamentModal from '../components/CreateTournamentModal';
@@ -11,6 +11,7 @@ import './Tournaments.css';
 
 const Tournaments = () => {
   const [tournaments, setTournaments] = useState([]);
+  const [archived, setArchived] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -19,8 +20,12 @@ const Tournaments = () => {
 
   const fetchTournaments = async () => {
     try {
-      const res = await api.get('tournaments/');
-      setTournaments(res.data);
+      const [activeRes, archivedRes] = await Promise.all([
+        api.get('tournaments/'),
+        api.get('tournaments/archived/')
+      ]);
+      setTournaments(activeRes.data);
+      setArchived(archivedRes.data);
     } catch (err) {
       console.error("Error fetching tournaments:", err);
     } finally {
@@ -182,6 +187,11 @@ const Tournaments = () => {
                         </div>
                       )}
 
+                      {/* Live Link */}
+                      <Link to={`/tournaments/${tournament.id}/live`} className="btn-live">
+                        <Trophy size={15} /> Consulter le Live
+                      </Link>
+
                       {/* CTA */}
                       {user ? (
                         user.role === 'player' ? (
@@ -214,6 +224,41 @@ const Tournaments = () => {
           )}
         </div>
       </section>
+
+      {/* ARCHIVES SECTION */}
+      {archived.length > 0 && (
+        <section className="tournaments-archives">
+          <div className="container">
+            <div className="archive-header">
+              <Archive size={22} className="archive-icon" />
+              <h2>Historique des Compétitions</h2>
+              <p>Consultez les résultats des tournois passés.</p>
+            </div>
+            <div className="archives-grid">
+              {archived.map((t) => (
+                <motion.div 
+                  key={t.id} 
+                  className="archive-card"
+                  whileHover={{ y: -3 }}
+                >
+                  <div className="archive-card-header">
+                    <Trophy size={18} />
+                    <h3>{t.name}</h3>
+                    <span className="archive-date">{new Date(t.end_date).toLocaleDateString()}</span>
+                  </div>
+                  <div className="archive-card-body">
+                    <div className="archive-info-item"><MapPin size={13} /> {t.terrain_name}</div>
+                    <div className="archive-info-item"><Users size={13} /> {t.teams?.length} Équipes</div>
+                    <Link to={`/tournaments/${t.id}/live`} className="btn-view-results">
+                      Voir les résultats <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <AnimatePresence>
         {isModalOpen && (

@@ -1,7 +1,12 @@
+import os
 import pymysql
 
 try:
-    connection = pymysql.connect(host='127.0.0.1', user='root', password='Qni]lKsqYD46i![I')
+    host = os.environ.get('DB_HOST', '127.0.0.1')
+    user = os.environ.get('DB_USER', 'root')
+    password = os.environ.get('DB_PASSWORD', 'Qni]lKsqYD46i![I')
+    
+    connection = pymysql.connect(host=host, user=user, password=password)
     with connection.cursor() as cursor:
         cursor.execute("DROP DATABASE IF EXISTS takwira_db;")
         cursor.execute("CREATE DATABASE takwira_db CHARACTER SET utf8 COLLATE utf8_general_ci;")

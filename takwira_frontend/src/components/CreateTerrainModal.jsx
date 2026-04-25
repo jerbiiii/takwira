@@ -5,6 +5,13 @@ import { toast } from 'react-hot-toast';
 import api from '../api/axios';
 import './CreateTournamentModal.css'; // Re-using modal styles
 
+const TUNISIAN_GOVERNORATES = [
+  "Ariana", "Béja", "Ben Arous", "Bizerte", "Gabès", "Gafsa", "Jendouba", 
+  "Kairouan", "Kasserine", "Kébili", "Kef", "Mahdia", "Manouba", "Médenine", 
+  "Monastir", "Nabeul", "Sfax", "Sidi Bouzid", "Siliana", "Sousse", 
+  "Tataouine", "Tozeur", "Tunis", "Zaghouan"
+];
+
 const CreateTerrainModal = ({ isOpen, onClose, onSuccess, editingTerrain = null }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -114,15 +121,18 @@ const CreateTerrainModal = ({ isOpen, onClose, onSuccess, editingTerrain = null 
 
           <div className="form-row split">
             <div className="form-group">
-              <label><MapPin size={16} /> Ville</label>
-              <input 
-                type="text" 
+              <label><MapPin size={16} /> Gouvernorat</label>
+              <select 
                 name="city" 
                 value={formData.city} 
                 onChange={handleChange} 
-                placeholder="Ex: Tunis"
-                required 
-              />
+                required
+              >
+                <option value="" disabled>Sélectionnez un gouvernorat</option>
+                {TUNISIAN_GOVERNORATES.map(gov => (
+                  <option key={gov} value={gov}>{gov}</option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
               <label><MapPin size={16} /> Adresse</label>

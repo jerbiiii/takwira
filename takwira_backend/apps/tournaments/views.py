@@ -1,20 +1,49 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Tournament, Team, TournamentRequest, JoinRequest
+from .models import Tournament, Team, TournamentRequest, JoinRequest, Match
 from .serializers import (
     TournamentSerializer, TournamentDetailSerializer, TeamSerializer,
-    TournamentRequestSerializer, JoinRequestSerializer
+    TournamentRequestSerializer, JoinRequestSerializer, MatchSerializer
 )
-from apps.users.permissions import IsAdminUser
-from apps.utils.availability import check_tournament_availability
 
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all().order_by('-created_at')
 
+    def get_queryset(self):
+        qs = Tournament.objects.all().order_by('-created_at')
+        # Auto-update statuses based on dates
+        for t in qs:
+            new_status = t.auto_status
+            if t.status != new_status:
+                Tournament.objects.filter(pk=t.pk).update(status=new_status)
+
+        # For public (non-admin) users, exclude archived tournaments
+        include_finished = self.request.query_params.get('include_finished', 'false')
+        if include_finished.lower() != 'true':
+            # Keep active + finished but not archived
+            active_ids = [t.id for t in qs if not t.is_archived]
+            qs = qs.filter(id__in=active_ids)
+        return qs
+
+    @action(detail=False, methods=['get'])
+    def archived(self, request):
+        """Returns only archived tournaments for the admin dashboard."""
+        qs = Tournament.objects.all()
+        # Auto-update statuses
+        for t in qs:
+            new_status = t.auto_status
+            if t.status != new_status:
+                Tournament.objects.filter(pk=t.pk).update(status=new_status)
+        
+        archived_ids = [t.id for t in qs if t.is_archived]
+        archived = Tournament.objects.filter(id__in=archived_ids).order_by('-end_date')
+        serializer = TournamentDetailSerializer(archived, many=True)
+        return Response(serializer.data)
+
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsAdminUser()]
+            return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticatedOrReadOnly()]
 
     def get_serializer_class(self):
@@ -59,6 +88,169 @@ class TournamentViewSet(viewsets.ModelViewSet):
         
         return Response({'status': 'Inscription réussie !'}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['get'])
+    def standings(self, request, pk=None):
+        tournament = self.get_object()
+        matches = tournament.matches.filter(status='finished')
+        
+        standings = {}
+        for team in tournament.teams.all():
+            standings[team.id] = {
+                'id': team.id,
+                'name': team.name,
+                'played': 0,
+                'won': 0,
+                'drawn': 0,
+                'lost': 0,
+                'gf': 0,
+                'ga': 0,
+                'gd': 0,
+                'points': 0
+            }
+
+        for match in matches:
+            if not match.team1 or not match.team2:
+                continue
+            
+            t1_id = match.team1.id
+            t2_id = match.team2.id
+            s1 = match.score1
+            s2 = match.score2
+
+            if t1_id in standings:
+                standings[t1_id]['played'] += 1
+                standings[t1_id]['gf'] += s1
+                standings[t1_id]['ga'] += s2
+            
+            if t2_id in standings:
+                standings[t2_id]['played'] += 1
+                standings[t2_id]['gf'] += s2
+                standings[t2_id]['ga'] += s1
+
+            if s1 > s2:
+                if t1_id in standings:
+                    standings[t1_id]['won'] += 1
+                    standings[t1_id]['points'] += 3
+                if t2_id in standings:
+                    standings[t2_id]['lost'] += 1
+            elif s1 < s2:
+                if t2_id in standings:
+                    standings[t2_id]['won'] += 1
+                    standings[t2_id]['points'] += 3
+                if t1_id in standings:
+                    standings[t1_id]['lost'] += 1
+            else:
+                if t1_id in standings:
+                    standings[t1_id]['drawn'] += 1
+                    standings[t1_id]['points'] += 1
+                if t2_id in standings:
+                    standings[t2_id]['drawn'] += 1
+                    standings[t2_id]['points'] += 1
+
+        for team_id in standings:
+            standings[team_id]['gd'] = standings[team_id]['gf'] - standings[team_id]['ga']
+
+        sorted_standings = sorted(standings.values(), key=lambda x: (x['points'], x['gd'], x['gf']), reverse=True)
+        return Response(sorted_standings)
+
+    @action(detail=True, methods=['get'], url_path='group-standings')
+    def group_standings(self, request, pk=None):
+        """Returns standings broken down by group for the group phase."""
+        tournament = self.get_object()
+        group_matches = tournament.matches.filter(phase='group', status='finished')
+        
+        # Get unique group names
+        group_names = group_matches.values_list('group_name', flat=True).distinct()
+        
+        result = {}
+        for group in group_names:
+            if not group:
+                continue
+            matches_in_group = group_matches.filter(group_name=group)
+            
+            # Find all teams that played in this group
+            team_ids = set()
+            for m in matches_in_group:
+                if m.team1_id:
+                    team_ids.add(m.team1_id)
+                if m.team2_id:
+                    team_ids.add(m.team2_id)
+            
+            standings = {}
+            from apps.tournaments.models import Team as TeamModel
+            for tid in team_ids:
+                try:
+                    team = TeamModel.objects.get(pk=tid)
+                    standings[tid] = {
+                        'id': str(tid),
+                        'name': team.name,
+                        'played': 0, 'won': 0, 'drawn': 0, 'lost': 0,
+                        'gf': 0, 'ga': 0, 'gd': 0, 'points': 0
+                    }
+                except TeamModel.DoesNotExist:
+                    continue
+            
+            for match in matches_in_group:
+                if not match.team1 or not match.team2:
+                    continue
+                t1, t2 = match.team1.id, match.team2.id
+                s1, s2 = match.score1, match.score2
+                
+                if t1 in standings:
+                    standings[t1]['played'] += 1
+                    standings[t1]['gf'] += s1
+                    standings[t1]['ga'] += s2
+                if t2 in standings:
+                    standings[t2]['played'] += 1
+                    standings[t2]['gf'] += s2
+                    standings[t2]['ga'] += s1
+                
+                if s1 > s2:
+                    if t1 in standings: standings[t1]['won'] += 1; standings[t1]['points'] += 3
+                    if t2 in standings: standings[t2]['lost'] += 1
+                elif s1 < s2:
+                    if t2 in standings: standings[t2]['won'] += 1; standings[t2]['points'] += 3
+                    if t1 in standings: standings[t1]['lost'] += 1
+                else:
+                    if t1 in standings: standings[t1]['drawn'] += 1; standings[t1]['points'] += 1
+                    if t2 in standings: standings[t2]['drawn'] += 1; standings[t2]['points'] += 1
+            
+            for tid in standings:
+                standings[tid]['gd'] = standings[tid]['gf'] - standings[tid]['ga']
+            
+            result[group] = sorted(standings.values(), key=lambda x: (x['points'], x['gd'], x['gf']), reverse=True)
+        
+        return Response(result)
+
+    @action(detail=True, methods=['post'], url_path='generate-matches')
+    def generate_matches(self, request, pk=None):
+        """Generates the group stage matches if tournament is full."""
+        tournament = self.get_object()
+        if tournament.teams.count() < 2:
+            return Response({"error": "Il faut au moins 2 équipes."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        success = tournament.generate_group_stage()
+        if success:
+            return Response({"message": "Matchs de poules générés avec succès !"})
+        return Response({"error": "Le tournoi a déjà commencé ou les matchs existent déjà."}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'], url_path='advance-phase')
+    def advance_phase(self, request, pk=None):
+        """Advances the tournament to the next phase (e.g., from groups to 1/8)."""
+        tournament = self.get_object()
+        result = tournament.advance_tournament()
+        return Response({"message": result})
+
+class MatchViewSet(viewsets.ModelViewSet):
+    queryset = Match.objects.all().order_by('match_date', 'order')
+    serializer_class = MatchSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAdminUser()]
+        return super().get_permissions()
+
 class TournamentRequestViewSet(viewsets.ModelViewSet):
     serializer_class = TournamentRequestSerializer
 
@@ -70,7 +262,7 @@ class TournamentRequestViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['approve', 'reject']:
-            return [IsAdminUser()]
+            return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
 
     def perform_create(self, serializer):
@@ -128,7 +320,7 @@ class JoinRequestViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['approve', 'reject']:
-            return [IsAdminUser()]
+            return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
 
     def perform_create(self, serializer):

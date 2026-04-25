@@ -50,6 +50,15 @@ export const tournamentsApi = {
   submitJoinRequest: (data) => api.post('tournaments/join-requests/', data),
   approveJoin: (id) => api.patch(`tournaments/join-requests/${id}/approve/`),
   rejectJoin: (id) => api.patch(`tournaments/join-requests/${id}/reject/`),
+  
+  getAll: () => api.get('tournaments/'),
+  getDetail: (id) => api.get(`tournaments/${id}/`),
+  getStandings: (id) => api.get(`tournaments/${id}/standings/`),
+  getGroupStandings: (id) => api.get(`tournaments/${id}/group-standings/`),
+  join: (id, team_name) => api.post(`tournaments/${id}/join/`, { team_name }),
+  updateMatch: (id, data) => api.patch(`tournaments/matches/${id}/`, data),
+  generateMatches: (id) => api.post(`tournaments/${id}/generate-matches/`),
+  advancePhase: (id) => api.post(`tournaments/${id}/advance-phase/`),
 };
 
 export default api;

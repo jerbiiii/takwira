@@ -19,14 +19,16 @@ def populate():
     club, _ = Plan.objects.update_or_create(name='club', defaults={'price_monthly': 99, 'max_reservations': 9999, 'can_create_tournament': True, 'can_manage_terrain': True})
 
     # Create users
+    admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
     admin, created = User.objects.get_or_create(email='admin@takwira.tn', defaults={'username': 'admin', 'role': 'admin'})
     if created:
-        admin.set_password('admin123')
+        admin.set_password(admin_pass)
         admin.save()
 
+    player_pass = os.environ.get('PLAYER_PASSWORD', 'player123')
     player, created = User.objects.get_or_create(email='player@takwira.tn', defaults={'username': 'player', 'role': 'player', 'subscription_plan': pro})
     if created:
-        player.set_password('player123')
+        player.set_password(player_pass)
         player.save()
 
     # Create Terrains (All owned by admin now)
